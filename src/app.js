@@ -14,10 +14,8 @@ const ApiError = require('./utils/ApiError');
 
 const app = express();
 
-if (config.env !== 'test') {
-  app.use(morgan.successHandler);
-  app.use(morgan.errorHandler);
-}
+app.use(morgan.successHandler);
+app.use(morgan.errorHandler);
 
 // set security HTTP headers
 app.use(helmet());
@@ -66,9 +64,5 @@ app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
-
-app.listen(3001, () => {
-  console.log(`Listening to port ${3001}`);
-});
 
 module.exports = app;

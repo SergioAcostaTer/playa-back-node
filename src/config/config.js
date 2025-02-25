@@ -10,10 +10,19 @@ const envVarsSchema = Joi.object()
     PORT: Joi.number().default(3000),
     POSTGRES_URL: Joi.string().description('PostgreSQL URL'),
     JWT_SECRET: Joi.string().optional().description('JWT secret key'),
-    JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().optional().default(30).description('minutes after which access tokens expire'),
+    JWT_ACCESS_EXPIRATION_MINUTES: Joi.number()
+      .optional()
+      .default(30)
+      .description('minutes after which access tokens expire'),
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().optional().default(30).description('days after which refresh tokens expire'),
-    JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number().optional().default(10).description('minutes after which reset password token expires'),
-    JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number().optional().default(10).description('minutes after which verify email token expires'),
+    JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number()
+      .optional()
+      .default(10)
+      .description('minutes after which reset password token expires'),
+    JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number()
+      .optional()
+      .default(10)
+      .description('minutes after which verify email token expires'),
   })
   .unknown();
 
