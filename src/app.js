@@ -7,7 +7,6 @@ const cors = require('cors');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
-const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
@@ -43,8 +42,7 @@ app.options('*', cors());
 
 // ----- Authentication & Authorization -----
 // JWT Authentication setup
-app.use(authMiddleware);
-
+// app.use(authMiddleware);
 
 // Rate limiting for authentication routes (only in production)
 if (config.env === 'production') {
@@ -56,7 +54,32 @@ if (config.env === 'production') {
 app.use('/v1', routes);
 
 // Root route (for basic checks)
-app.use('/', (req, res) => res.send('Hello World!'));
+app.use('/beaches', (req, res) => {
+  res.json({
+    beaches: [
+      {
+        name: 'Bondi Beach',
+        location: 'Sydney, Australia',
+      },
+      {
+        name: 'Manly Beach',
+        location: 'Sydney, Australia',
+      },
+      {
+        name: 'Cottesloe Beach',
+        location: 'Perth, Australia',
+      },
+      {
+        name: 'Surfers Paradise',
+        location: 'Gold Coast, Australia',
+      },
+      {
+        name: 'Kondalilla Falls',
+        location: 'Sunshine Coast, Australia',
+      },
+    ],
+  });
+});
 
 // ----- Error Handling -----
 // 404 for any unknown routes

@@ -1,8 +1,6 @@
-const { jwtVerify } = require('../utils/jwt');
-const User = require('../models/User');
-const { clearToken } = require('../utils/cookies');
-const { StatusCodes } = require('http-status-codes');
 const logger = require('../config/logger');
+const { verifyToken } = require('../services/token.service');
+const httpStatus = require('http-status/lib');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -19,28 +17,30 @@ const authMiddleware = async (req, res, next) => {
     }
 
     // Verify the JWT token
-    const decoded = jwtVerify(token);
+    const decoded = verifyToken(token);
     if (!decoded || !decoded.id) {
       logger.info('Invalid or missing token claims');
-      
+
       // Clear the token in the response
       res.clearCookie('token');
 
       return res
-        .status(StatusCodes.UNAUTHORIZED)
+        .status(httpStatus.UNAUTHORIZED)
         .json({
           message: 'Invalid or missing token claims',
-          status: StatusCodes.UNAUTHORIZED,
+          status: httpStatus.UNAUTHORIZED,
         })
         .end();
     }
 
     // Find user based on the decoded token
-    const user = await User.findOne({ id: decoded.id }, { _id: 0, __v: 0 }).lean();
+    const user = {
+      email: decoded.id,
+    };
 
     if (!user) {
       logger.info(`No user found for username: ${decoded.id}`);
-      
+
       res.clearCookie('token');
 
       return next();
@@ -59,10 +59,10 @@ const authMiddleware = async (req, res, next) => {
     res.clearCookie('token');
 
     return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
       .json({
         message: 'Internal server error',
-        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        status: httpStatus.INTERNAL_SERVER_ERROR,
       })
       .end();
   }
