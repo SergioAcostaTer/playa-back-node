@@ -7,62 +7,67 @@ const cors = require('cors');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const authMiddleware = require('./middlewares/authMiddleware.ts');
 
 const app = express();
 
-app.use(morgan.successHandler);
-app.use(morgan.errorHandler);
+// ----- Middleware Setup -----
+// Logging middleware (only active in non-test environments)
+if (config.env !== 'test') {
+  app.use(morgan.successHandler);
+  app.use(morgan.errorHandler);
+}
 
-// set security HTTP headers
+// Security headers
 app.use(helmet());
 
-// parse json request body
+// Body parsing middleware
 app.use(express.json());
-
-// parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 
-// sanitize request data
+// Data sanitization middleware
 app.use(xss());
 app.use(mongoSanitize());
 
-// gzip compression
+// Compression middleware
 app.use(compression());
 
-// enable cors
+// CORS setup
 app.use(cors());
 app.options('*', cors());
 
-// jwt authentication
-// app.use(passport.initialize());
-// passport.use('jwt', jwtStrategy);
+// ----- Authentication & Authorization -----
+// JWT Authentication setup
+app.use(authMiddleware);
 
-// limit repeated failed requests to auth endpoints
+
+// Rate limiting for authentication routes (only in production)
 if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
 }
 
-// v1 api routes (ensure these are not commented if needed)
-// app.use('/v1', routes);
+// ----- Route Handling -----
+// API routes
+app.use('/v1', routes);
 
-// root route handler
-app.use('/', (req, res) => {
-  res.send('Hello World!');
-});
+// Root route (for basic checks)
+app.use('/', (req, res) => res.send('Hello World!'));
 
-// send back a 404 error for any unknown api request
+// ----- Error Handling -----
+// 404 for any unknown routes
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
 
-// convert error to ApiError, if needed
+// Convert errors to ApiError format
 app.use(errorConverter);
 
-// handle error
+// Final error handler
 app.use(errorHandler);
 
 module.exports = app;
