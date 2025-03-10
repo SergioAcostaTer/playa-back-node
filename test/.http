@@ -1,0 +1,8 @@
+### Sign-Up Request
+POST http://localhost:8000/v1/auth/sign-up
+Content-Type: application/json
+
+{
+  "email": "tracktreck999@gmail.com",
+  "password": "Pollademon0*"
+}

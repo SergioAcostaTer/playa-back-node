@@ -1,0 +1,29 @@
+APP_PORT=8000
+APP_URL=http://localhost:8000
+CLIENT_URL=http://localhost:3000
+
+MONGODB_URI=mongodb+srv://user:example@user.mongodb.net/example
+
+PG_USER = 'terencio_owner'
+PG_HOST = 'ep-patient-dawn-a9da7q5m-pooler.gwc.azure.neon.tech'
+PG_DATABASE = 'terencio'
+PG_PASSWORD = 'npg_Jt6Qo4qaDMrb'
+PG_PORT = 5432
+
+REDIS_URI=redis://127.0.0.1:6379
+REDIS_TOKEN_EXPIRATION=86400
+
+JWT_SECRET=
+JWT_EXPIRATION=24h
+
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USER=
+MAIL_PASSWORD=
+MAIL_TPL_PATH=templates
+
+STORAGE_PATH=storage/public
+
+API_LOG_FILENAME=api-logs.log
+
+

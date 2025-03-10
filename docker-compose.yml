@@ -1,0 +1,32 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - dev_network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_USER: terencio_owner
+      POSTGRES_PASSWORD: tolete123
+      POSTGRES_DB: terencio
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dev_network
+
+volumes:
+  postgres_data:
+
+networks:
+  dev_network:
+    driver: bridge
