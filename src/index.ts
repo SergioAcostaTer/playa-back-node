@@ -18,10 +18,6 @@ postgres.execute('SELECT 1 + 1 AS result').then(() => {
 
 const app: Express = express()
 
-app.get('/', (req, res) => {
-  res.send('Hello World')
-})
-
 app.use(
   join('/', process.env.STORAGE_PATH),
   express.static(join(__dirname, process.env.STORAGE_PATH))
@@ -32,7 +28,6 @@ app.use(
   express.json({ limit: '10mb' }),
   express.urlencoded({ limit: '10mb', extended: true }),
   corsMiddleware,
-  authMiddleware,
   router,
   notFoundMiddleware
 )

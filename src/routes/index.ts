@@ -1,13 +1,11 @@
 import { Router } from 'express'
-import { products } from './products'
-import { auth } from './auth'
-import { users } from './users'
+import { beaches } from './beaches'
 
 const router: Router = Router()
 
 const routes: {
   [key: string]: (router: Router) => void
-} = { products, auth, users }
+} = { beaches }
 
 for (const route in routes) {
   routes[route](router)
