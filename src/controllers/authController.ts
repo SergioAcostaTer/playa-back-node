@@ -50,6 +50,13 @@ export const authController = {
         const { accessToken } = jwtSign(existingUser.id)
         res.setHeader('Authorization', `Bearer ${accessToken}`)
 
+        await db
+        .insert(sessions)
+        .values({
+          userId: existingUser.id
+        })
+        .execute()
+
         // Set the token in the cookie
         setToken(res, accessToken)
 
