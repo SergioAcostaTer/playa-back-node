@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express'
 
 import { getAccessTokenFromHeaders } from '@/utils/headers'
 import { jwtVerify } from '@/utils/jwt'
-import { userService } from '@/services'
 import { redis } from '@/dataSources'
 
 export const authMiddleware = async (
@@ -24,12 +23,9 @@ export const authMiddleware = async (
     )
     if (isAccessTokenExpired) return next()
 
-    const user = await userService.getById(id)
-    if (!user) return next()
 
     Object.assign(req, {
       context: {
-        user,
         accessToken
       }
     })
