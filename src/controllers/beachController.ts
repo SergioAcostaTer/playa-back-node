@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes'
 import { postgres } from '@/dataSources'
 import { beaches } from '@/models/beaches'
 import { sql } from 'drizzle-orm'
-import winston from 'winston'
 
 export const beachController = {
   getAllBeaches: async (req: Request, res: Response) => {
