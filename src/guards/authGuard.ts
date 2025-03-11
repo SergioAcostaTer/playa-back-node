@@ -3,8 +3,6 @@ import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 
 import { IContextRequest, IUserRequest } from '@/contracts/request'
 
-import winston from 'winston'
-
 export const authGuard = {
   isAuth: (
     { context: { user } }: IContextRequest<IUserRequest>,
@@ -26,46 +24,7 @@ export const authGuard = {
     res: Response,
     next: NextFunction
   ) => {
-    winston.info('Checking if user is guest')
     if (!user) {
-      return next()
-    }
-
-    return res.status(StatusCodes.FORBIDDEN).json({
-      message: ReasonPhrases.FORBIDDEN,
-      status: StatusCodes.FORBIDDEN
-    })
-  },
-
-  isVerified: (
-    {
-      context: {
-        user: { verified }
-      }
-    }: IContextRequest<IUserRequest>,
-    res: Response,
-    next: NextFunction
-  ) => {
-    if (verified) {
-      return next()
-    }
-
-    return res.status(StatusCodes.FORBIDDEN).json({
-      message: ReasonPhrases.FORBIDDEN,
-      status: StatusCodes.FORBIDDEN
-    })
-  },
-
-  isUnverfied: (
-    {
-      context: {
-        user: { verified }
-      }
-    }: IContextRequest<IUserRequest>,
-    res: Response,
-    next: NextFunction
-  ) => {
-    if (!verified) {
       return next()
     }
 

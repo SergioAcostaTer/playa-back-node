@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { getAccessTokenFromHeaders } from '@/utils/headers'
+import { getTokenFromCookie } from '@/utils/headers'
 import { jwtVerify } from '@/utils/jwt'
-import { redis } from '@/dataSources'
+import { userService } from '@/services/userService'
+import winston from 'winston'
 
 export const authMiddleware = async (
   req: Request,
@@ -12,20 +13,23 @@ export const authMiddleware = async (
   try {
     Object.assign(req, { context: {} })
 
-    const { accessToken } = getAccessTokenFromHeaders(req.headers)
+    winston.info('Auth middleware')
+
+    console.log(req.headers)
+
+    const accessToken = getTokenFromCookie(req)
     if (!accessToken) return next()
 
     const { id } = jwtVerify({ accessToken })
     if (!id) return next()
 
-    const isAccessTokenExpired = await redis.client.get(
-      `expiredToken:${accessToken}`
-    )
-    if (isAccessTokenExpired) return next()
+    const user = await userService.getUserById(id)
 
+    if (!user) return next()
 
     Object.assign(req, {
       context: {
+        user,
         accessToken
       }
     })

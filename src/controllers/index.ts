@@ -1,3 +1,3 @@
-// export { authController } from './authController'
-// export { userController } from './userController'
-// export { mediaController } from './mediaController'
+export { userController } from './userController'
+export { beachController } from './beachController'
+export { authController } from './authController'

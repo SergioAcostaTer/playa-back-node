@@ -1,13 +1,13 @@
 import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { postgres } from '@/dataSources'
+import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
 import { sql } from 'drizzle-orm'
 
 export const beachController = {
   getAllBeaches: async (req: Request, res: Response) => {
     try {
-      const beachesFromDb = await postgres.select().from(beaches)
+      const beachesFromDb = await db.select().from(beaches)
 
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
@@ -23,7 +23,7 @@ export const beachController = {
   getBeachById: async (req: Request, res: Response) => {
     try {
       const beachId = Number(req.params.id)
-      const beachFromDb = await postgres
+      const beachFromDb = await db
         .select()
         .from(beaches)
         .where(sql`${beaches.id} = ${beachId}`)
@@ -51,7 +51,7 @@ export const beachController = {
     try {
       const { q, page = 1, limit = 10 } = req.query
       const offset = (Number(page) - 1) * Number(limit)
-      const beachesFromDb = await postgres
+      const beachesFromDb = await db
         .select()
         .from(beaches)
         .where(sql`${beaches.name} ILIKE ${`%${q}%`}`)

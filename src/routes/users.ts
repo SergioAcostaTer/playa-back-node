@@ -1,8 +1,8 @@
-// import { Router } from 'express'
+import { Router } from 'express'
 
-// import { authGuard } from '@/guards'
-// import { userController } from '@/controllers'
+import { authGuard } from '@/guards'
+import { userController } from '@/controllers'
 
-// export const users = (router: Router): void => {
-//   router.get('/me', authGuard.isAuth, userController.me)
-// }
+export const users = (router: Router): void => {
+  router.get('/me', authGuard.isAuth, userController.me)
+}

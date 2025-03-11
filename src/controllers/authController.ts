@@ -1,110 +1,112 @@
-// import { Response, Request } from 'express'
-// import { userService } from '@/services/userService'
-// import { jwtSign } from '@/utils/jwt'
-// import bcrypt from 'bcrypt'
-// import { StatusCodes } from 'http-status-codes'
-// import { redis } from '@/dataSources'
-// import { UserMail } from '@/mailer'
+import { Response, Request } from 'express'
+import { jwtSign } from '@/utils/jwt'
+import { StatusCodes } from 'http-status-codes'
+import { userService } from '@/services/userService'
+import { IGoogleUser } from '@/contracts/user'
+import winston from 'winston'
+import { setToken, clearToken } from '@/utils/cookies'
+import { oauth2Client } from '@/config/googleOAuth'
+import { db } from '@/dataSources'
+import { sessions } from '@/models'
 
-// export const authController = {
-//   signIn: async (req: Request, res: Response) => {
-//     try {
-//       const { email, password } = req.body
-//       const user = await userService.getByEmail(email)
+export const authController = {
+  google: (_: Request, res: Response) => {
+    // Generate the Google OAuth2 authentication URL
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email'
+      ]
+    })
 
-//       if (!user) {
-//         return res.status(StatusCodes.NOT_FOUND).json({
-//           status: StatusCodes.NOT_FOUND,
-//           message: 'User not found'
-//         })
-//       }
+    res.redirect(authUrl)
+  },
 
-//       const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
-//       if (!isPasswordValid) {
-//         return res.status(StatusCodes.UNAUTHORIZED).json({
-//           status: StatusCodes.UNAUTHORIZED,
-//           message: 'Invalid email or password'
-//         })
-//       }
+  googleCallback: async (req: Request, res: Response) => {
+    const { code } = req.query
 
-//       const { accessToken } = jwtSign(user.id)
-//       res.setHeader('Authorization', `Bearer ${accessToken}`)
+    if (!code) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .send('Error: Code not provided')
+    }
 
-//       return res.status(StatusCodes.OK).json({
-//         status: StatusCodes.OK,
-//         message: 'Sign-in successful',
-//         data: { accessToken }
-//       })
-//     } catch (error) {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         status: StatusCodes.INTERNAL_SERVER_ERROR,
-//         message: 'An unexpected error occurred during sign-in'
-//       })
-//     }
-//   },
+    try {
+      // Exchange the code for tokens
+      const { tokens } = await oauth2Client.getToken(code as string)
+      oauth2Client.setCredentials(tokens)
 
-//   signUp: async (req: Request, res: Response) => {
-//     try {
-//       const { email, password } = req.body
+      // Get user info from Google
+      const { data } = await oauth2Client.request<IGoogleUser>({
+        url: 'https://www.googleapis.com/oauth2/v1/userinfo'
+      })
 
-//       if (await userService.isExistByEmail(email)) {
-//         return res.status(StatusCodes.CONFLICT).json({
-//           status: StatusCodes.CONFLICT,
-//           message: 'Email is already registered'
-//         })
-//       }
+      // Check if user exists in the database
+      const existingUser = await userService.getUserByGoogleId(data.id)
 
-//       const newUser = await userService.create(email, password)
-//       if (!newUser) {
-//         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//           status: StatusCodes.INTERNAL_SERVER_ERROR,
-//           message: 'User creation failed. Please try again later.'
-//         })
-//       }
+      if (existingUser) {
+        // If user exists, generate a JWT token
+        const { accessToken } = jwtSign(existingUser.id)
+        res.setHeader('Authorization', `Bearer ${accessToken}`)
 
-//       const { accessToken } = jwtSign(newUser.id)
-//       res.setHeader('Authorization', `Bearer ${accessToken}`)
+        // Set the token in the cookie
+        setToken(res, accessToken)
 
-//       const userMail = new UserMail()
-//       await userMail.signUp({ email })
+        return res.status(StatusCodes.OK).json({
+          status: StatusCodes.OK,
+          message: 'Logged in successfully',
+          data: {
+            user: existingUser
+          }
+        })
+      }
 
-//       return res.status(StatusCodes.CREATED).json({
-//         status: StatusCodes.CREATED,
-//         message: 'User registered successfully',
-//         data: { accessToken }
-//       })
-//     } catch (error) {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         status: StatusCodes.INTERNAL_SERVER_ERROR,
-//         message: 'An unexpected error occurred during sign-up'
-//       })
-//     }
-//   },
+      // If the user doesn't exist, create a new user
+      const savedUser = await userService.createUser(data)
+      const { accessToken } = jwtSign(savedUser.id)
 
-//   signOut: async (req: Request, res: Response) => {
-//     try {
-//       const { accessToken } = req.body
+      res.setHeader('Authorization', `Bearer ${accessToken}`)
+      setToken(res, accessToken)
 
-//       if (!accessToken) {
-//         return res.status(StatusCodes.BAD_REQUEST).json({
-//           status: StatusCodes.BAD_REQUEST,
-//           message: 'Access token is required for sign-out'
-//         })
-//       }
+      winston.info('User created successfully')
 
-//       await redis.client.set(`expiredToken:${accessToken}`, '1', {
-//         EX: process.env.REDIS_TOKEN_EXPIRATION
-//       })
+      await db
+        .insert(sessions)
+        .values({
+          userId: savedUser.id
+        })
+        .execute()
 
-//       return res.status(StatusCodes.OK).json({
-//         status: StatusCodes.OK,
-//         message: 'Successfully signed out'
-//       })
-//     } catch (error) {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         status: StatusCodes.INTERNAL_SERVER_ERROR,
-//         message: 'An unexpected error occurred during sign-out'
-//       })
-//     }
-//   }
-// }
+      return res.status(StatusCodes.OK).json({
+        status: StatusCodes.OK,
+        message: 'User created successfully',
+        data: {
+          user: savedUser
+        }
+      })
+    } catch (error) {
+      winston.error('Error during OAuth callback: ', error)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send('Error during OAuth callback')
+    }
+  },
+
+  logOut: async (_: Request, res: Response) => {
+    try {
+      // Clear the token from the cookie
+      clearToken(res)
+      return res.status(StatusCodes.OK).json({
+        status: StatusCodes.OK,
+        message: 'Logged out successfully'
+      })
+    } catch (error) {
+      winston.error('Error during logout: ', error)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'An unexpected error occurred during sign-out'
+      })
+    }
+  }
+}
