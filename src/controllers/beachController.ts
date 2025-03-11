@@ -1,7 +1,7 @@
 import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { postgres } from '@/dataSources'
-import { beaches } from '@/models/beach/beach'
+import { beaches } from '@/models/beaches'
 import { sql } from 'drizzle-orm'
 import winston from 'winston'
 
@@ -50,16 +50,12 @@ export const beachController = {
   },
   search: async (req: Request, res: Response) => {
     try {
-      const { q, page = 1, limit = 10, blue_flag = true } = req.query
+      const { q, page = 1, limit = 10 } = req.query
       const offset = (Number(page) - 1) * Number(limit)
       const beachesFromDb = await postgres
         .select()
         .from(beaches)
-        .where(
-          sql`${beaches.name} ILIKE ${`%${q}%`} AND ${
-            beaches.blueFlag
-          } = ${blue_flag}`
-        )
+        .where(sql`${beaches.name} ILIKE ${`%${q}%`}`)
         .orderBy(beaches.name)
         .limit(Number(limit))
         .offset(offset)
