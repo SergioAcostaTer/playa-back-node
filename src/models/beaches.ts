@@ -10,6 +10,7 @@ import {
 
 export const beaches = pgTable('beaches', {
   id: serial('id').primaryKey(),
+  coverUrl: varchar('cover_url', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
   island: varchar('island', { length: 255 }).notNull(),
   municipality: varchar('municipality', { length: 255 }).notNull(),
