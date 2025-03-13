@@ -1,8 +1,8 @@
 module.exports = {
     apps: [{
         name: 'playa-backend',
-        script: './dist/index.js', // Changed from public to dist
-        instances: 1, // Changed from 'max' (not recommended for databases)
+        script: './public/index.js',
+        instances: 1,
         autorestart: true,
         watch: false,
         max_memory_restart: '1G',
