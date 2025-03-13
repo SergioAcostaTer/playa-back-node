@@ -38,16 +38,22 @@ app.use(
   router
 )
 
+const currentRoutes = router.stack
+  .map(layer => layer.route)
+  .filter(route => route)
+  .map(route => `{process.env.APP_URL}${route.path}`)
+
 // Default route
 app.get('/', (req, res) => {
-  res.send(`
+  res.send(
+    `
     <h1>Playea API</h1>
     <p>Visit our page in <a href="playea.eu">Playea</a></p>
     <p>API documentation <a href="playea.eu/docs">here</a></p>
-    `)
+    ` +
+      currentRoutes.map(route => `<a href="${route}">${route}</a>`).join('<br>')
+  )
 })
-
-
 
 app.use(notFoundMiddleware)
 
