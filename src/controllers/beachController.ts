@@ -2,16 +2,39 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { sql } from 'drizzle-orm'
+import { eq, ilike, count } from 'drizzle-orm'
+import { URL } from 'url'
 
 export const beachController = {
   getAllBeaches: async (req: Request, res: Response) => {
     try {
-      const beachesFromDb = await db.select().from(beaches)
+      const page = Number(req.query.page) || 1
+      const limit = Number(req.query.limit) || 10
+      const offset = (page - 1) * limit
+
+      // Get total count of beaches
+      const totalCountResult = await db.select({ count: count() }).from(beaches)
+      const totalCount = totalCountResult[0]?.count || 0
+      const totalPages = Math.ceil(totalCount / limit)
+
+      // Get paginated beaches data
+      const beachesFromDb = await db.select().from(beaches).limit(limit).offset(offset)
+
+      // Create the next page link
+      const nextPage =
+        page < totalPages
+          ? new URL(`/beaches?page=${page + 1}&limit=${limit}`, `${req.protocol}://${req.get('host')}`).toString()
+          : null
 
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
-        data: beachesFromDb
+        data: beachesFromDb,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          nextPage
+        }
       })
     } catch (error) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -20,14 +43,11 @@ export const beachController = {
       })
     }
   },
+
   getBeachById: async (req: Request, res: Response) => {
     try {
       const beachId = Number(req.params.id)
-      const beachFromDb = await db
-        .select()
-        .from(beaches)
-        .where(sql`${beaches.id} = ${beachId}`)
-        .limit(1)
+      const beachFromDb = await db.select().from(beaches).where(eq(beaches.id, beachId)).limit(1)
 
       if (!beachFromDb.length) {
         return res.status(StatusCodes.NOT_FOUND).json({
@@ -47,21 +67,46 @@ export const beachController = {
       })
     }
   },
+
   search: async (req: Request, res: Response) => {
     try {
-      const { q, page = 1, limit = 10 } = req.query
-      const offset = (Number(page) - 1) * Number(limit)
+      const q = String(req.query.q || '').trim()
+      const page = Number(req.query.page) || 1
+      const limit = Number(req.query.limit) || 10
+      const offset = (page - 1) * limit
+
+      // Get total count of matching beaches
+      const totalCountResult = await db
+        .select({ count: count() })
+        .from(beaches)
+        .where(ilike(beaches.name, `%${q}%`))
+      const totalCount = totalCountResult[0]?.count || 0
+      const totalPages = Math.ceil(totalCount / limit)
+
+      // Get the paginated beaches data
       const beachesFromDb = await db
         .select()
         .from(beaches)
-        .where(sql`${beaches.name} ILIKE ${`%${q}%`}`)
+        .where(ilike(beaches.name, `%${q}%`))
         .orderBy(beaches.name)
-        .limit(Number(limit))
+        .limit(limit)
         .offset(offset)
+
+      // Create the next page link
+      const nextPage =
+        page < totalPages
+          ? new URL(`/beaches/search?q=${q}&page=${page + 1}&limit=${limit}`, `${req.protocol}://${req.get('host')}`).toString()
+          : null
 
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
-        data: beachesFromDb
+        data: beachesFromDb,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          nextPage
+        }
       })
     } catch (error) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
