@@ -38,6 +38,7 @@ app.use(
   router
 )
 
+// Default route
 app.get('/', (req, res) => {
   res.send(`
     <h1>Playea API</h1>
