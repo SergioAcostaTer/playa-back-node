@@ -1,26 +1,18 @@
 {
-  "name": "express-mongodb-rest-api-boilerplate",
-  "version": "1.0.3",
-  "description": "A boilerplate for Node.js apps / Rest API / Authentication from scratch - express, mongodb (mongoose).",
+  "name": "playea-backend",
+  "version": "0.1.0",
+  "description": "Tu buscador de playas en Canarias",
   "main": "./src",
   "repository": {
     "type": "git",
-    "url": "https://github.com/watscho/express-mongodb-rest-api-boilerplate"
+    "url": "https://github.com/SergioAcostaTer/playa-back-node"
   },
-  "bugs": "https://github.com/watscho/express-mongodb-rest-api-boilerplate/issues",
+  "bugs": "https://github.com/SergioAcostaTer/playa-back-node/issues",
   "keywords": [
-    "express",
-    "mongodb",
-    "mongoose",
-    "node",
-    "nodejs",
-    "authentication",
-    "scratch",
-    "boilerplate",
-    "authorization",
-    "docker",
-    "api",
-    "rest"
+    "playa",
+    "canarias",
+    "buscador",
+    "api"
   ],
   "scripts": {
     "start": "npm run rm:public && cross-env NODE_ENV=production ts-node --files -r tsconfig-paths/register ./src",
@@ -34,7 +26,7 @@
     "prettier": "prettier \"**/*.+(js|jsx|json|css|md)\"",
     "prettier:write": "prettier --write \"**/*.+(js|jsx|json|css|md)\""
   },
-  "author": "Watscho Aiwasov",
+  "author": "Sergio Acosta, Miguel Ángel, Gorka Eymard",
   "license": "MIT",
   "devDependencies": {
     "@types/bcrypt": "5.0.0",
