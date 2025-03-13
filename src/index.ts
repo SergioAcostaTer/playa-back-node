@@ -41,6 +41,13 @@ app.use(
   router
 )
 
+app.get('/', (req, res) => {
+  res.send(`
+    <h1>Playea API</h1>
+    <p>Visit our page in <a href="playea.eu">Playea</a></p>
+    `)
+})
+
 // Catch 404 errors AFTER static serving
 app.use(notFoundMiddleware)
 
