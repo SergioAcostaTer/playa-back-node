@@ -28,7 +28,7 @@ winston.info(`Serving static files from: ${absoluteStoragePath}`)
 
 // Serve static files from the configured directory
 app.use(
-  `/${storagePath}`, // This will expose files at /storage/public/...
+  `/${storagePath}`,
   express.static(absoluteStoragePath)
 )
 
@@ -48,7 +48,6 @@ app.get('/', (req, res) => {
     `)
 })
 
-// Catch 404 errors AFTER static serving
 app.use(notFoundMiddleware)
 
 // Start server
