@@ -41,7 +41,7 @@ app.use(
 const currentRoutes = router.stack
   .map(layer => layer.route)
   .filter(route => route)
-  .map(route => `{process.env.APP_URL}${route.path}`)
+  .map(route => `${process.env.APP_URL}${route.path}`)
 
 // Default route
 app.get('/', (req, res) => {
