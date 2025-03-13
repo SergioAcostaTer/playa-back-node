@@ -1,6 +1,6 @@
 module.exports = {
     apps: [{
-        name: 'playa-backend',
+        name: 'playea',
         script: './public/index.js',
         instances: 1,
         autorestart: true,
