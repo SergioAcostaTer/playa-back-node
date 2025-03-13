@@ -27,10 +27,7 @@ const absoluteStoragePath = resolve(__dirname, storagePath)
 winston.info(`Serving static files from: ${absoluteStoragePath}`)
 
 // Serve static files from the configured directory
-app.use(
-  `/${storagePath}`,
-  express.static(absoluteStoragePath)
-)
+app.use(`/${storagePath}`, express.static(absoluteStoragePath))
 
 // Ensure static files middleware is before dynamic routes
 app.use(
@@ -51,6 +48,6 @@ app.get('/', (req, res) => {
 app.use(notFoundMiddleware)
 
 // Start server
-app.listen(process.env.APP_PORT, '0.0.0.0', () => {
+app.listen(process.env.APP_PORT, () => {
   winston.info(`Server is running on port ${process.env.APP_PORT}`)
 })
