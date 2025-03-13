@@ -52,6 +52,6 @@ app.get('/', (req, res) => {
 app.use(notFoundMiddleware)
 
 // Start server
-app.listen(process.env.APP_PORT, () => {
+app.listen(process.env.APP_PORT, '0.0.0.0', () => {
   winston.info(`Server is running on port ${process.env.APP_PORT}`)
 })
