@@ -43,8 +43,11 @@ app.get('/', (req, res) => {
   res.send(`
     <h1>Playea API</h1>
     <p>Visit our page in <a href="playea.eu">Playea</a></p>
+    <p>API documentation <a href="playea.eu/docs">here</a></p>
     `)
 })
+
+
 
 app.use(notFoundMiddleware)
 
