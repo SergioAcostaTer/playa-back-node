@@ -51,22 +51,16 @@ export const authController = {
         res.setHeader('Authorization', `Bearer ${accessToken}`)
 
         await db
-        .insert(sessions)
-        .values({
-          userId: existingUser.id
-        })
-        .execute()
+          .insert(sessions)
+          .values({
+            userId: existingUser.id
+          })
+          .execute()
 
         // Set the token in the cookie
         setToken(res, accessToken)
 
-        return res.status(StatusCodes.OK).json({
-          status: StatusCodes.OK,
-          message: 'Logged in successfully',
-          data: {
-            user: existingUser
-          }
-        })
+        return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
       }
 
       // If the user doesn't exist, create a new user
@@ -85,13 +79,7 @@ export const authController = {
         })
         .execute()
 
-      return res.status(StatusCodes.OK).json({
-        status: StatusCodes.OK,
-        message: 'User created successfully',
-        data: {
-          user: savedUser
-        }
-      })
+      return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
     } catch (error) {
       winston.error('Error during OAuth callback: ', error)
       return res
@@ -103,11 +91,9 @@ export const authController = {
   logOut: async (_: Request, res: Response) => {
     try {
       // Clear the token from the cookie
+      winston.error('Logging out')
       clearToken(res)
-      return res.status(StatusCodes.OK).json({
-        status: StatusCodes.OK,
-        message: 'Logged out successfully'
-      })
+      return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
     } catch (error) {
       winston.error('Error during logout: ', error)
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
