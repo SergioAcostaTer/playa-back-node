@@ -60,7 +60,7 @@ export const authController = {
         // Set the token in the cookie
         setToken(res, accessToken)
 
-        return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
+        return res.status(StatusCodes.OK).redirect(process.env.CLIENT_URL)
       }
 
       // If the user doesn't exist, create a new user
@@ -79,7 +79,7 @@ export const authController = {
         })
         .execute()
 
-      return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
+      return res.status(StatusCodes.OK).redirect(process.env.CLIENT_URL)
     } catch (error) {
       winston.error('Error during OAuth callback: ', error)
       return res
@@ -93,7 +93,7 @@ export const authController = {
       // Clear the token from the cookie
       winston.error('Logging out')
       clearToken(res)
-      return res.status(StatusCodes.OK).redirect(process.env.APP_URL)
+      return res.status(StatusCodes.OK).redirect(process.env.CLIENT_URL)
     } catch (error) {
       winston.error('Error during logout: ', error)
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

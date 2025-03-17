@@ -9,7 +9,7 @@ export const setToken = (res: Response, token: string): Response => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' as 'strict' | 'lax' | 'none',
+    sameSite: 'lax' as 'strict' | 'lax' | 'none',
     maxAge: 1000 * 60 * 60 * 24 * 7 // Cookie valid for 7 days
   }
 
@@ -21,7 +21,7 @@ export const clearToken = (res: Response): Response => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' as 'strict' | 'lax' | 'none'
+    sameSite: 'lax' as 'strict' | 'lax' | 'none'
   }
 
   return res.clearCookie('token', cookieOptions)
