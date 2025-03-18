@@ -90,8 +90,6 @@ export const authController = {
 
   logOut: async (_: Request, res: Response) => {
     try {
-      // Clear the token from the cookie
-      winston.error('Logging out')
       clearToken(res)
       return res.status(StatusCodes.OK).redirect(process.env.CLIENT_URL)
     } catch (error) {
