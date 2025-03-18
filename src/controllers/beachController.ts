@@ -2,7 +2,7 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, and, count } from 'drizzle-orm'
+import { eq, ilike, and, count, SQL } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
@@ -16,14 +16,30 @@ export const beachController = {
       )
       const offset = (page - 1) * limit
 
-      const islandFilter = req.query.island ? String(req.query.island) : null
+      const filterConditions: SQL[] = []
+
+      if (req.query.island) {
+        filterConditions.push(eq(beaches.island, String(req.query.island)))
+      }
+      if (req.query.province) {
+        filterConditions.push(eq(beaches.province, String(req.query.province)))
+      }
+      if (req.query.hasMixedComposition) {
+        filterConditions.push(eq(beaches.hasMixedComposition, req.query.hasMixedComposition === 'true'))
+      }
+      if (req.query.sportsArea) {
+        filterConditions.push(eq(beaches.sportsArea, req.query.sportsArea === 'true'))
+      }
+      if (req.query.wheelchairAccess) {
+        filterConditions.push(eq(beaches.wheelchairAccess, req.query.wheelchairAccess === 'true'))
+      }
 
       const baseQuery = db.select().from(beaches)
       const countQuery = db.select({ count: count() }).from(beaches)
 
-      if (islandFilter) {
-        baseQuery.where(eq(beaches.island, islandFilter))
-        countQuery.where(eq(beaches.island, islandFilter))
+      if (filterConditions.length) {
+        baseQuery.where(and(...filterConditions))
+        countQuery.where(and(...filterConditions))
       }
 
       const totalCountResult = await countQuery
@@ -32,12 +48,13 @@ export const beachController = {
 
       const beachesFromDb = await baseQuery.limit(limit).offset(offset)
 
+      const queryParams = new URLSearchParams(req.query as Record<string, string>)
+      queryParams.set('page', String(Number(page) + 1))
+      queryParams.set('limit', String(limit))
+
       const nextPage =
         page < totalPages
-          ? new URL(
-              `/beaches?page=${page + 1}&limit=${limit}${islandFilter ? `&island=${islandFilter}` : ''}`,
-              `${req.protocol}://${req.get('host')}`
-            ).toString()
+          ? new URL(`/beaches?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
           : null
 
       return res.status(StatusCodes.OK).json({
@@ -96,11 +113,23 @@ export const beachController = {
         apiConfig.pagination.maxLimit
       )
       const offset = (page - 1) * limit
-      const islandFilter = req.query.island ? String(req.query.island) : null
 
-      const conditions = [ilike(beaches.name, `%${q}%`)]
-      if (islandFilter) {
-        conditions.push(eq(beaches.island, islandFilter))
+      const conditions: SQL[] = [ilike(beaches.name, `%${q}%`)]
+
+      if (req.query.island) {
+        conditions.push(eq(beaches.island, String(req.query.island)))
+      }
+      if (req.query.province) {
+        conditions.push(eq(beaches.province, String(req.query.province)))
+      }
+      if (req.query.hasMixedComposition) {
+        conditions.push(eq(beaches.hasMixedComposition, req.query.hasMixedComposition === 'true'))
+      }
+      if (req.query.sportsArea) {
+        conditions.push(eq(beaches.sportsArea, req.query.sportsArea === 'true'))
+      }
+      if (req.query.wheelchairAccess) {
+        conditions.push(eq(beaches.wheelchairAccess, req.query.wheelchairAccess === 'true'))
       }
 
       const totalCountResult = await db
@@ -119,12 +148,13 @@ export const beachController = {
         .limit(limit)
         .offset(offset)
 
+      const queryParams = new URLSearchParams(req.query as Record<string, string>)
+      queryParams.set('page', String(Number(page) + 1))
+      queryParams.set('limit', String(limit))
+
       const nextPage =
         page < totalPages
-          ? new URL(
-              `/beaches/search?q=${q}&page=${page + 1}&limit=${limit}${islandFilter ? `&island=${islandFilter}` : ''}`,
-              `${req.protocol}://${req.get('host')}`
-            ).toString()
+          ? new URL(`/beaches/search?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
           : null
 
       return res.status(StatusCodes.OK).json({
