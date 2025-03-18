@@ -15,8 +15,6 @@ export const authMiddleware = async (
 
     winston.info('Auth middleware')
 
-    console.log(req.headers)
-
     const accessToken = getTokenFromCookie(req)
     if (!accessToken) return next()
 
