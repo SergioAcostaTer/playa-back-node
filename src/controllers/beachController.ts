@@ -2,7 +2,7 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, count } from 'drizzle-orm'
+import { eq, ilike, and, count } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
@@ -16,23 +16,26 @@ export const beachController = {
       )
       const offset = (page - 1) * limit
 
-      // Get total count of beaches
-      const totalCountResult = await db.select({ count: count() }).from(beaches)
+      const islandFilter = req.query.island ? String(req.query.island) : null
+
+      const baseQuery = db.select().from(beaches)
+      const countQuery = db.select({ count: count() }).from(beaches)
+
+      if (islandFilter) {
+        baseQuery.where(eq(beaches.island, islandFilter))
+        countQuery.where(eq(beaches.island, islandFilter))
+      }
+
+      const totalCountResult = await countQuery
       const totalCount = totalCountResult[0]?.count || 0
       const totalPages = Math.ceil(totalCount / limit)
 
-      // Get paginated beaches data
-      const beachesFromDb = await db
-        .select()
-        .from(beaches)
-        .limit(limit)
-        .offset(offset)
+      const beachesFromDb = await baseQuery.limit(limit).offset(offset)
 
-      // Create the next page link
       const nextPage =
         page < totalPages
           ? new URL(
-              `/beaches?page=${page + 1}&limit=${limit}`,
+              `/beaches?page=${page + 1}&limit=${limit}${islandFilter ? `&island=${islandFilter}` : ''}`,
               `${req.protocol}://${req.get('host')}`
             ).toString()
           : null
@@ -93,29 +96,33 @@ export const beachController = {
         apiConfig.pagination.maxLimit
       )
       const offset = (page - 1) * limit
+      const islandFilter = req.query.island ? String(req.query.island) : null
 
-      // Get total count of matching beaches
+      const conditions = [ilike(beaches.name, `%${q}%`)]
+      if (islandFilter) {
+        conditions.push(eq(beaches.island, islandFilter))
+      }
+
       const totalCountResult = await db
         .select({ count: count() })
         .from(beaches)
-        .where(ilike(beaches.name, `%${q}%`))
+        .where(and(...conditions))
+
       const totalCount = totalCountResult[0]?.count || 0
       const totalPages = Math.ceil(totalCount / limit)
 
-      // Get the paginated beaches data
       const beachesFromDb = await db
         .select()
         .from(beaches)
-        .where(ilike(beaches.name, `%${q}%`))
+        .where(and(...conditions))
         .orderBy(beaches.name)
         .limit(limit)
         .offset(offset)
 
-      // Create the next page link
       const nextPage =
         page < totalPages
           ? new URL(
-              `/beaches/search?q=${q}&page=${page + 1}&limit=${limit}`,
+              `/beaches/search?q=${q}&page=${page + 1}&limit=${limit}${islandFilter ? `&island=${islandFilter}` : ''}`,
               `${req.protocol}://${req.get('host')}`
             ).toString()
           : null
