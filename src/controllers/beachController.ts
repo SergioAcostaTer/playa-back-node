@@ -189,12 +189,6 @@ export const beachController = {
       queryParams.set('page', String(Number(page) + 1))
       queryParams.set('limit', String(limit))
 
-  
-      // Construir URL para la siguiente página
-      const queryParams = new URLSearchParams(req.query as Record<string, string>)
-      queryParams.set('page', String(page + 1))
-      queryParams.set('limit', String(limit))
-  
       const nextPage =
         page < totalPages
           ? new URL(`/beaches/search?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
