@@ -2,9 +2,38 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, and, count, SQL } from 'drizzle-orm'
+import { eq, ilike, and, and, count, SQL, SQL, isNotNull } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
+
+
+const buildFilterConditions = (query: Record<string, any>) => {
+  const filters: SQL[] = []
+
+  const filterMap = {
+    name: query.name ? ilike(beaches.name, `%${query.name}%`) : undefined,
+    island: query.island ? ilike(beaches.island, `%${query.island}%`) : undefined,
+    province: query.province ? ilike(beaches.province, `%${query.province}%`) : undefined,
+    hasMixedComposition: eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true'),
+    sportsArea: eq(beaches.sportsArea, query.sportsArea === 'true'),
+    wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true'),
+    lifeguardService: query.lifeguardService && query.lifeguardService !== "" ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
+    hasAdaptedShowers: eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true'),
+  }
+
+  for (const [key, condition] of Object.entries(filterMap)) {
+    if (condition !== undefined) filters.push(condition)
+  }
+
+  return filters
+}
+
+const getPagination = (page: number, limit: number, totalCount: number) => {
+  const totalPages = Math.ceil(totalCount / limit)
+  const offset = (page - 1) * limit
+
+  return { offset, totalPages, totalCount }
+}
 
 export const beachController = {
   getAllBeaches: async (req: Request, res: Response) => {
@@ -14,25 +43,8 @@ export const beachController = {
         Number(req.query.limit) || apiConfig.pagination.defaultLimit,
         apiConfig.pagination.maxLimit
       )
-      const offset = (page - 1) * limit
 
-      const filterConditions: SQL[] = []
-
-      if (req.query.island) {
-        filterConditions.push(eq(beaches.island, String(req.query.island)))
-      }
-      if (req.query.province) {
-        filterConditions.push(eq(beaches.province, String(req.query.province)))
-      }
-      if (req.query.hasMixedComposition) {
-        filterConditions.push(eq(beaches.hasMixedComposition, req.query.hasMixedComposition === 'true'))
-      }
-      if (req.query.sportsArea) {
-        filterConditions.push(eq(beaches.sportsArea, req.query.sportsArea === 'true'))
-      }
-      if (req.query.wheelchairAccess) {
-        filterConditions.push(eq(beaches.wheelchairAccess, req.query.wheelchairAccess === 'true'))
-      }
+      const filterConditions = buildFilterConditions(req.query)
 
       const baseQuery = db.select().from(beaches)
       const countQuery = db.select({ count: count() }).from(beaches)
@@ -44,12 +56,13 @@ export const beachController = {
 
       const totalCountResult = await countQuery
       const totalCount = totalCountResult[0]?.count || 0
-      const totalPages = Math.ceil(totalCount / limit)
+
+      const { offset, totalPages } = getPagination(page, limit, totalCount)
 
       const beachesFromDb = await baseQuery.limit(limit).offset(offset)
 
       const queryParams = new URLSearchParams(req.query as Record<string, string>)
-      queryParams.set('page', String(Number(page) + 1))
+      queryParams.set('page', String(page + 1))
       queryParams.set('limit', String(limit))
 
       const nextPage =
@@ -140,34 +153,30 @@ export const beachController = {
         Number(req.query.limit) || apiConfig.pagination.defaultLimit,
         apiConfig.pagination.maxLimit
       )
-      const offset = (page - 1) * limit
-
-      const conditions: SQL[] = [ilike(beaches.name, `%${q}%`)]
-
-      if (req.query.island) {
-        conditions.push(eq(beaches.island, String(req.query.island)))
+  
+      // Condición básica de búsqueda por nombre con búsqueda flexible
+      const conditions: SQL[] = []
+  
+      if (q) {
+        // Solo agregar esta condición si la query no está vacía
+        conditions.push(ilike(beaches.name, `%${q}%`))
       }
-      if (req.query.province) {
-        conditions.push(eq(beaches.province, String(req.query.province)))
-      }
-      if (req.query.hasMixedComposition) {
-        conditions.push(eq(beaches.hasMixedComposition, req.query.hasMixedComposition === 'true'))
-      }
-      if (req.query.sportsArea) {
-        conditions.push(eq(beaches.sportsArea, req.query.sportsArea === 'true'))
-      }
-      if (req.query.wheelchairAccess) {
-        conditions.push(eq(beaches.wheelchairAccess, req.query.wheelchairAccess === 'true'))
-      }
-
+  
+      // Agregar filtros adicionales con condiciones flexibles
+      const filterConditions = buildFilterConditions(req.query)
+      conditions.push(...filterConditions)
+  
+      // Calcular total de resultados
       const totalCountResult = await db
         .select({ count: count() })
         .from(beaches)
         .where(and(...conditions))
-
+  
       const totalCount = totalCountResult[0]?.count || 0
-      const totalPages = Math.ceil(totalCount / limit)
-
+  
+      // Obtener la paginación
+      const { offset, totalPages } = getPagination(page, limit, totalCount)
+  
       const beachesFromDb = await db
         .select()
         .from(beaches)
@@ -180,11 +189,17 @@ export const beachController = {
       queryParams.set('page', String(Number(page) + 1))
       queryParams.set('limit', String(limit))
 
+  
+      // Construir URL para la siguiente página
+      const queryParams = new URLSearchParams(req.query as Record<string, string>)
+      queryParams.set('page', String(page + 1))
+      queryParams.set('limit', String(limit))
+  
       const nextPage =
         page < totalPages
           ? new URL(`/beaches/search?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
           : null
-
+  
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
         data: beachesFromDb,
@@ -203,4 +218,5 @@ export const beachController = {
       })
     }
   }
+  
 }
