@@ -2,7 +2,7 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, and, count, SQL } from 'drizzle-orm'
+import { eq, ilike, and, count, SQL, isNotNull } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
@@ -10,18 +10,19 @@ import { apiConfig } from '@/config/config'
 const buildFilterConditions = (query: Record<string, any>) => {
   const filters: SQL[] = []
 
-  // Definir el mapeo de los filtros
   const filterMap = {
-    island: ilike(beaches.island, query.island),
-    province: ilike(beaches.province, query.province),
+    name: query.name ? ilike(beaches.name, `%${query.name}%`) : undefined,
+    island: query.island ? ilike(beaches.island, `%${query.island}%`) : undefined,
+    province: query.province ? ilike(beaches.province, `%${query.province}%`) : undefined,
     hasMixedComposition: eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true'),
     sportsArea: eq(beaches.sportsArea, query.sportsArea === 'true'),
-    wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true')
+    wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true'),
+    lifeguardService: query.lifeguardService && query.lifeguardService !== "" ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
+    hasAdaptedShowers: eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true'),
   }
 
-  // Iterar sobre los filtros y agregar las condiciones
   for (const [key, condition] of Object.entries(filterMap)) {
-    if (query[key]) filters.push(condition)
+    if (condition !== undefined) filters.push(condition)
   }
 
   return filters
@@ -43,7 +44,6 @@ export const beachController = {
         apiConfig.pagination.maxLimit
       )
 
-      // Obtener las condiciones de filtrado
       const filterConditions = buildFilterConditions(req.query)
 
       const baseQuery = db.select().from(beaches)
@@ -57,12 +57,10 @@ export const beachController = {
       const totalCountResult = await countQuery
       const totalCount = totalCountResult[0]?.count || 0
 
-      // Obtener la paginación
       const { offset, totalPages } = getPagination(page, limit, totalCount)
 
       const beachesFromDb = await baseQuery.limit(limit).offset(offset)
 
-      // Construir URL para la siguiente página
       const queryParams = new URLSearchParams(req.query as Record<string, string>)
       queryParams.set('page', String(page + 1))
       queryParams.set('limit', String(limit))
@@ -99,25 +97,30 @@ export const beachController = {
         Number(req.query.limit) || apiConfig.pagination.defaultLimit,
         apiConfig.pagination.maxLimit
       )
-
-      // Condición básica de búsqueda por nombre
-      const conditions: SQL[] = [ilike(beaches.name, `%${q}%`)]
-
-      // Agregar filtros
+  
+      // Condición básica de búsqueda por nombre con búsqueda flexible
+      const conditions: SQL[] = []
+  
+      if (q) {
+        // Solo agregar esta condición si la query no está vacía
+        conditions.push(ilike(beaches.name, `%${q}%`))
+      }
+  
+      // Agregar filtros adicionales con condiciones flexibles
       const filterConditions = buildFilterConditions(req.query)
       conditions.push(...filterConditions)
-
+  
       // Calcular total de resultados
       const totalCountResult = await db
         .select({ count: count() })
         .from(beaches)
         .where(and(...conditions))
-
+  
       const totalCount = totalCountResult[0]?.count || 0
-
+  
       // Obtener la paginación
       const { offset, totalPages } = getPagination(page, limit, totalCount)
-
+  
       const beachesFromDb = await db
         .select()
         .from(beaches)
@@ -125,17 +128,17 @@ export const beachController = {
         .orderBy(beaches.name)
         .limit(limit)
         .offset(offset)
-
+  
       // Construir URL para la siguiente página
       const queryParams = new URLSearchParams(req.query as Record<string, string>)
       queryParams.set('page', String(page + 1))
       queryParams.set('limit', String(limit))
-
+  
       const nextPage =
         page < totalPages
           ? new URL(`/beaches/search?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
           : null
-
+  
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
         data: beachesFromDb,
@@ -154,4 +157,5 @@ export const beachController = {
       })
     }
   }
+  
 }
