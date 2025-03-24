@@ -11,14 +11,13 @@ const buildFilterConditions = (query: Record<string, any>) => {
   const filters: SQL[] = []
 
   const filterMap = {
-    name: query.name ? ilike(beaches.name, `%${query.name}%`) : undefined,
     island: query.island ? ilike(beaches.island, `%${query.island}%`) : undefined,
     province: query.province ? ilike(beaches.province, `%${query.province}%`) : undefined,
     hasMixedComposition: eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true'),
     sportsArea: eq(beaches.sportsArea, query.sportsArea === 'true'),
     wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true'),
     lifeguardService: query.lifeguardService && query.lifeguardService !== "" ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
-    hasAdaptedShowers: eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true'),
+    adaptedShower: eq(beaches.adaptedShower, query.adaptedShower === 'true'),
   }
 
   for (const [key, condition] of Object.entries(filterMap)) {
@@ -109,6 +108,8 @@ export const beachController = {
       // Agregar filtros adicionales con condiciones flexibles
       const filterConditions = buildFilterConditions(req.query)
       conditions.push(...filterConditions)
+      console.log("Filters applied:", conditions);
+
   
       // Calcular total de resultados
       const totalCountResult = await db
