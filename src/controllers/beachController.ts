@@ -2,7 +2,7 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, and, and, count, SQL, SQL, isNotNull } from 'drizzle-orm'
+import { eq, ilike, and, count, SQL, isNotNull } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
@@ -17,7 +17,7 @@ const buildFilterConditions = (query: Record<string, any>) => {
     hasMixedComposition: eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true'),
     sportsArea: eq(beaches.sportsArea, query.sportsArea === 'true'),
     wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true'),
-    lifeguardService: query.lifeguardService && query.lifeguardService !== "" ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
+    lifeguardService: query.lifeguardService && query.lifeguardService !== '' ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
     hasAdaptedShowers: eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true'),
   }
 
