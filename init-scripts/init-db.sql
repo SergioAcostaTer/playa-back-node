@@ -102,3 +102,25 @@ CREATE TABLE sessions (
 );
 
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+
+
+
+-- 1. Add the new 'slug' column
+ALTER TABLE beaches ADD COLUMN slug VARCHAR(255);
+
+-- 2. Update the 'slug' column with the desired transformation
+UPDATE beaches
+SET slug = LOWER(
+    REPLACE(
+        REPLACE(
+            REPLACE(
+                REPLACE(
+                    REPLACE(name, ' ', '-'),  -- Replace spaces with hyphens
+                'á', 'a'),                  -- Replace accented characters
+            'é', 'e'),
+        'í', 'i'),
+    'ó', 'o'),
+'ú', 'u');
+
+-- 3. Optionally, you may want to ensure the 'slug' is unique (index or constraint)
+CREATE UNIQUE INDEX idx_beaches_slug ON beaches(slug);

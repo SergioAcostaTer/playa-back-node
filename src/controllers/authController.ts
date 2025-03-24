@@ -91,7 +91,10 @@ export const authController = {
   logOut: async (_: Request, res: Response) => {
     try {
       clearToken(res)
-      return res.status(StatusCodes.OK).redirect(process.env.CLIENT_URL)
+      return res.status(StatusCodes.OK).json({
+        status: StatusCodes.OK,
+        message: 'Successfully logged out'
+      })
     } catch (error) {
       winston.error('Error during logout: ', error)
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
