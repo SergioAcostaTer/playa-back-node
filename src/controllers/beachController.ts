@@ -56,13 +56,41 @@ export const beachController = {
     }
   },
 
-  getBeachById: async (req: Request, res: Response) => {
+  // getBeachById: async (req: Request, res: Response) => {
+  //   try {
+  //     const beachId = Number(req.params.id)
+  //     const beachFromDb = await db
+  //       .select()
+  //       .from(beaches)
+  //       .where(eq(beaches.id, beachId))
+  //       .limit(1)
+
+  //     if (!beachFromDb.length) {
+  //       return res.status(StatusCodes.NOT_FOUND).json({
+  //         status: StatusCodes.NOT_FOUND,
+  //         message: 'Beach not found'
+  //       })
+  //     }
+
+  //     return res.status(StatusCodes.OK).json({
+  //       status: StatusCodes.OK,
+  //       data: beachFromDb[0]
+  //     })
+  //   } catch (error) {
+  //     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+  //       status: StatusCodes.INTERNAL_SERVER_ERROR,
+  //       message: 'An unexpected error occurred during fetching beach'
+  //     })
+  //   }
+  // },
+
+  getBeachBySlug: async (req: Request, res: Response) => {
     try {
-      const beachId = Number(req.params.id)
+      const slug = String(req.params.slug)
       const beachFromDb = await db
         .select()
         .from(beaches)
-        .where(eq(beaches.id, beachId))
+        .where(ilike(beaches.slug, slug))
         .limit(1)
 
       if (!beachFromDb.length) {
