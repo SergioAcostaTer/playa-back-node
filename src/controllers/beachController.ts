@@ -6,26 +6,39 @@ import { eq, ilike, and, count, SQL, isNotNull } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
-
 const buildFilterConditions = (query: Record<string, any>) => {
   const filters: SQL[] = []
 
   const filterMap = {
     name: query.name ? ilike(beaches.name, `%${query.name}%`) : undefined,
-    island: query.island ? ilike(beaches.island, `%${query.island}%`) : undefined,
-    province: query.province ? ilike(beaches.province, `%${query.province}%`) : undefined,
-    hasMixedComposition: eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true'),
-    sportsArea: eq(beaches.sportsArea, query.sportsArea === 'true'),
-    wheelchairAccess: eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true'),
-    lifeguardService: query.lifeguardService && query.lifeguardService !== '' ? eq(beaches.lifeguardService, query.lifeguardService) : undefined,
-    hasAdaptedShowers: eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true'),
+    island: query.island
+      ? ilike(beaches.island, `%${query.island}%`)
+      : undefined,
+    province: query.province
+      ? ilike(beaches.province, `%${query.province}%`)
+      : undefined,
+    hasMixedComposition:
+      query.hasMixedComposition !== undefined &&
+      query.hasMixedComposition !== ''
+        ? eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true')
+        : undefined,
+    sportsArea:
+      query.sportsArea !== undefined && query.sportsArea !== ''
+        ? eq(beaches.sportsArea, query.sportsArea === 'true')
+        : undefined,
+    wheelchairAccess:
+      query.wheelchairAccess !== undefined && query.wheelchairAccess !== ''
+        ? eq(beaches.wheelchairAccess, query.wheelchairAccess === 'true')
+        : undefined,
+    hasAdaptedShowers:
+      query.hasAdaptedShowers !== undefined && query.hasAdaptedShowers !== ''
+        ? eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true')
+        : undefined
   }
 
-  for (const [key, condition] of Object.entries(filterMap)) {
-    if (condition !== undefined) filters.push(condition)
-  }
-
-  return filters
+  return Object.values(filterMap).filter(
+    (condition): condition is SQL => condition !== undefined
+  )
 }
 
 const getPagination = (page: number, limit: number, totalCount: number) => {
@@ -61,13 +74,18 @@ export const beachController = {
 
       const beachesFromDb = await baseQuery.limit(limit).offset(offset)
 
-      const queryParams = new URLSearchParams(req.query as Record<string, string>)
+      const queryParams = new URLSearchParams(
+        req.query as Record<string, string>
+      )
       queryParams.set('page', String(page + 1))
       queryParams.set('limit', String(limit))
 
       const nextPage =
         page < totalPages
-          ? new URL(`/beaches?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
+          ? new URL(
+              `/beaches?${queryParams.toString()}`,
+              `${req.protocol}://${req.get('host')}`
+            ).toString()
           : null
 
       return res.status(StatusCodes.OK).json({
@@ -153,30 +171,30 @@ export const beachController = {
         Number(req.query.limit) || apiConfig.pagination.defaultLimit,
         apiConfig.pagination.maxLimit
       )
-  
+
       // Condición básica de búsqueda por nombre con búsqueda flexible
       const conditions: SQL[] = []
-  
+
       if (q) {
         // Solo agregar esta condición si la query no está vacía
         conditions.push(ilike(beaches.name, `%${q}%`))
       }
-  
+
       // Agregar filtros adicionales con condiciones flexibles
       const filterConditions = buildFilterConditions(req.query)
       conditions.push(...filterConditions)
-  
+
       // Calcular total de resultados
       const totalCountResult = await db
         .select({ count: count() })
         .from(beaches)
         .where(and(...conditions))
-  
+
       const totalCount = totalCountResult[0]?.count || 0
-  
+
       // Obtener la paginación
       const { offset, totalPages } = getPagination(page, limit, totalCount)
-  
+
       const beachesFromDb = await db
         .select()
         .from(beaches)
@@ -185,15 +203,20 @@ export const beachController = {
         .limit(limit)
         .offset(offset)
 
-      const queryParams = new URLSearchParams(req.query as Record<string, string>)
+      const queryParams = new URLSearchParams(
+        req.query as Record<string, string>
+      )
       queryParams.set('page', String(Number(page) + 1))
       queryParams.set('limit', String(limit))
 
       const nextPage =
         page < totalPages
-          ? new URL(`/beaches/search?${queryParams.toString()}`, `${req.protocol}://${req.get('host')}`).toString()
+          ? new URL(
+              `/beaches/search?${queryParams.toString()}`,
+              `${req.protocol}://${req.get('host')}`
+            ).toString()
           : null
-  
+
       return res.status(StatusCodes.OK).json({
         status: StatusCodes.OK,
         data: beachesFromDb,
@@ -212,5 +235,4 @@ export const beachController = {
       })
     }
   }
-  
 }
