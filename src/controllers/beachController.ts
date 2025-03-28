@@ -2,24 +2,28 @@ import { Response, Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { db } from '@/dataSources'
 import { beaches } from '@/models/beaches'
-import { eq, ilike, and, count, SQL, isNotNull } from 'drizzle-orm'
+import { eq, ilike, and, count, SQL, ne } from 'drizzle-orm'
 import { URL } from 'url'
 import { apiConfig } from '@/config/config'
 
 const buildFilterConditions = (query: Record<string, any>) => {
-  const filters: SQL[] = []
+  const filters: SQL[] = [];
 
   const filterMap = {
-    name: query.name ? ilike(beaches.name, `%${query.name}%`) : undefined,
-    island: query.island
-      ? ilike(beaches.island, `%${query.island}%`)
-      : undefined,
-    province: query.province
-      ? ilike(beaches.province, `%${query.province}%`)
-      : undefined,
+    name: 
+      query.name 
+        ? ilike(beaches.name, `%${query.name}%`) 
+        : undefined,
+    island: 
+      query.island 
+        ? ilike(beaches.island, `%${query.island}%`) 
+        : undefined,
+    province: 
+      query.province 
+        ? ilike(beaches.province, `%${query.province}%`) 
+        : undefined,
     hasMixedComposition:
-      query.hasMixedComposition !== undefined &&
-      query.hasMixedComposition !== ''
+      query.hasMixedComposition !== undefined && query.hasMixedComposition !== ''
         ? eq(beaches.hasMixedComposition, query.hasMixedComposition === 'true')
         : undefined,
     sportsArea:
@@ -33,13 +37,27 @@ const buildFilterConditions = (query: Record<string, any>) => {
     hasAdaptedShowers:
       query.hasAdaptedShowers !== undefined && query.hasAdaptedShowers !== ''
         ? eq(beaches.hasAdaptedShowers, query.hasAdaptedShowers === 'true')
-        : undefined
-  }
+        : undefined,
+    hasRock:
+      query.hasRock !== undefined && query.hasRock !== ''
+        ? eq(beaches.hasRock, query.hasRock === 'true')
+        : undefined,
+    hasSand:
+      query.hasSand !== undefined && query.hasSand !== ''
+        ? eq(beaches.hasSand, query.hasSand === 'true')
+        : undefined,
+    lifeguard:
+      query.lifeguard !== undefined && query.lifeguard !== ''
+        ? query.lifeguard === 'true'
+          ? ne(beaches.lifeguardService, '')
+          : eq(beaches.lifeguardService, '')
+        : undefined,
+  };
 
   return Object.values(filterMap).filter(
     (condition): condition is SQL => condition !== undefined
-  )
-}
+  );
+};
 
 const getPagination = (page: number, limit: number, totalCount: number) => {
   const totalPages = Math.ceil(totalCount / limit)
