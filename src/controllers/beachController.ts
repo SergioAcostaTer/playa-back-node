@@ -52,6 +52,10 @@ const buildFilterConditions = (query: Record<string, any>) => {
           ? ne(beaches.lifeguardService, '')
           : eq(beaches.lifeguardService, '')
         : undefined,
+    hasFootShowers:
+      query.hasFootShowers !== undefined && query.hasFootShowers !== ''
+        ? eq(beaches.hasFootShowers, query.hasFootShowers === 'true')
+        : undefined
   };
 
   return Object.values(filterMap).filter(
