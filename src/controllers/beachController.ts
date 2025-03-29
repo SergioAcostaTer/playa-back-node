@@ -46,9 +46,9 @@ const buildFilterConditions = (query: Record<string, any>) => {
       query.hasSand !== undefined && query.hasSand !== ''
         ? eq(beaches.hasSand, query.hasSand === 'true')
         : undefined,
-    lifeguard:
-      query.lifeguard !== undefined && query.lifeguard !== ''
-        ? query.lifeguard === 'true'
+    hasLifeguard:
+      query.hasLifeguard !== undefined && query.hasLifeguard !== ''
+        ? query.hasLifeguard === 'true'
           ? ne(beaches.lifeguardService, '')
           : eq(beaches.lifeguardService, '')
         : undefined,
