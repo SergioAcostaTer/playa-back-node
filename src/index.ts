@@ -38,7 +38,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./routes/*.ts'],
+  apis: ['./dist/routes/*.js'],
   basePath: '/',
 }
 
