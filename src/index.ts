@@ -4,7 +4,6 @@ import 'dotenv/config'
 import winston from 'winston'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
-
 import '@/infrastructure/logger'
 import { db } from '@/dataSources'
 import {
@@ -17,7 +16,10 @@ import { router } from '@/routes'
 // Connect to the database
 db.execute('SELECT 1 + 1 AS result').then(() => {
   winston.info('Postgres connected')
+}).catch((err) => {
+  winston.error('Database connection failed:', err)
 })
+
 
 const app: Express = express()
 
@@ -36,14 +38,15 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./routes/*.ts'], // Path to your route files for extracting JSDoc comments
+  apis: ['./routes/*.ts'],
+  basePath: '/',
 }
 
 // Generate Swagger documentation
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
 
 // Serve Swagger UI at the `/docs` route
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Ensure STORAGE_PATH is defined correctly
 const storagePath = process.env.STORAGE_PATH || 'storage/public'
@@ -63,6 +66,14 @@ app.use(
   authMiddleware,
   router
 )
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: 'Welcome to Playea API',
+    documentation: `${process.env.APP_URL}/docs`
+  })
+})
 
 app.use(notFoundMiddleware)
 
