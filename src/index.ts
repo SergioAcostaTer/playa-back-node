@@ -3,7 +3,8 @@ import { resolve } from 'path'
 import 'dotenv/config'
 import winston from 'winston'
 import swaggerUi from 'swagger-ui-express'
-import swaggerJsdoc from 'swagger-jsdoc'
+import fs from 'fs'
+import path from 'path'
 import '@/infrastructure/logger'
 import { db } from '@/dataSources'
 import {
@@ -12,48 +13,28 @@ import {
   notFoundMiddleware
 } from '@/middlewares'
 import { router } from '@/routes'
+import { consola } from 'consola-mini';
 
-// Connect to the database
 db.execute('SELECT 1 + 1 AS result').then(() => {
-  winston.info('Postgres connected')
+  consola.info('Postgres connected')
 }).catch((err) => {
-  winston.error('Database connection failed:', err)
+  consola.error('Database connection failed:', err)
 })
-
 
 const app: Express = express()
 
-// Swagger JSDoc configuration
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0', // OpenAPI version
-    info: {
-      title: 'Playea API',
-      version: '1.0.0',
-      description: 'API documentation for Playea service',
-    },
-    servers: [
-      {
-        url: process.env.APP_URL || 'http://localhost:3000', // Your API base URL
-      },
-    ],
-  },
-  apis: ['./routes/*.ts'],
-  basePath: '/',
-}
+const swaggerFilePath = path.resolve(__dirname, 'swagger-docs.json')
+const swaggerDocs = JSON.parse(fs.readFileSync(swaggerFilePath, 'utf-8'))
 
-// Generate Swagger documentation
-const swaggerSpec = swaggerJsdoc(swaggerOptions)
-
-// Serve Swagger UI at the `/docs` route
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+// Serve Swagger UI at the `/api-docs` route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 // Ensure STORAGE_PATH is defined correctly
 const storagePath = process.env.STORAGE_PATH || 'storage/public'
 const absoluteStoragePath = resolve(__dirname, storagePath)
 
 // Log storage path for debugging
-winston.info(`Serving static files from: ${absoluteStoragePath}`)
+consola.info(`Serving static files from: ${absoluteStoragePath}`)
 
 // Serve static files from the configured directory
 app.use(`/${storagePath}`, express.static(absoluteStoragePath))
@@ -68,16 +49,12 @@ app.use(
 )
 
 app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 200,
-    message: 'Welcome to Playea API',
-    documentation: `${process.env.APP_URL}/docs`
-  })
+  res.redirect('/api-docs')
 })
 
 app.use(notFoundMiddleware)
 
 // Start server
 app.listen(process.env.APP_PORT, () => {
-  winston.info(`Server is running on port ${process.env.APP_PORT}`)
+  consola.info(`Server is running on port ${process.env.APP_PORT}`)
 })
