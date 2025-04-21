@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "bcrypt": "5.1.0",
+    "consola-mini": "^0.0.6",
     "cors": "2.8.5",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.5",

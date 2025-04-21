@@ -13,17 +13,16 @@ import {
   notFoundMiddleware
 } from '@/middlewares'
 import { router } from '@/routes'
+import { consola } from 'consola-mini';
 
-// Connect to the database
 db.execute('SELECT 1 + 1 AS result').then(() => {
-  winston.info('Postgres connected')
+  consola.info('Postgres connected')
 }).catch((err) => {
-  winston.error('Database connection failed:', err)
+  consola.error('Database connection failed:', err)
 })
 
 const app: Express = express()
 
-// Load Swagger JSON documentation
 const swaggerFilePath = path.resolve(__dirname, 'swagger-docs.json')
 const swaggerDocs = JSON.parse(fs.readFileSync(swaggerFilePath, 'utf-8'))
 
@@ -35,7 +34,7 @@ const storagePath = process.env.STORAGE_PATH || 'storage/public'
 const absoluteStoragePath = resolve(__dirname, storagePath)
 
 // Log storage path for debugging
-winston.info(`Serving static files from: ${absoluteStoragePath}`)
+consola.info(`Serving static files from: ${absoluteStoragePath}`)
 
 // Serve static files from the configured directory
 app.use(`/${storagePath}`, express.static(absoluteStoragePath))
@@ -49,17 +48,6 @@ app.use(
   router
 )
 
-/**
- * @swagger
- * /:
- *   get:
- *     summary: Home page redirection
- *     description: Redirects to the API documentation at /api-docs.
- *     tags: [Home]
- *     responses:
- *       302:
- *         description: Redirects to the Swagger documentation
- */
 app.get('/', (req, res) => {
   res.redirect('/api-docs')
 })
@@ -68,5 +56,5 @@ app.use(notFoundMiddleware)
 
 // Start server
 app.listen(process.env.APP_PORT, () => {
-  winston.info(`Server is running on port ${process.env.APP_PORT}`)
+  consola.info(`Server is running on port ${process.env.APP_PORT}`)
 })
