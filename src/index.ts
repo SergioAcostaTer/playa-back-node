@@ -38,8 +38,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./dist/routes/*.js'],
-  basePath: '/',
+  apis: ['./routes/*.ts', './controllers/*.ts'], // Path to the API docs
 }
 
 // Generate Swagger documentation
