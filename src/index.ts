@@ -2,7 +2,8 @@ import express, { Express } from 'express'
 import { resolve } from 'path'
 import 'dotenv/config'
 import winston from 'winston'
-
+import swaggerUi from 'swagger-ui-express'
+import swaggerJsdoc from 'swagger-jsdoc'
 import '@/infrastructure/logger'
 import { db } from '@/dataSources'
 import {
@@ -15,9 +16,37 @@ import { router } from '@/routes'
 // Connect to the database
 db.execute('SELECT 1 + 1 AS result').then(() => {
   winston.info('Postgres connected')
+}).catch((err) => {
+  winston.error('Database connection failed:', err)
 })
 
+
 const app: Express = express()
+
+// Swagger JSDoc configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0', // OpenAPI version
+    info: {
+      title: 'Playea API',
+      version: '1.0.0',
+      description: 'API documentation for Playea service',
+    },
+    servers: [
+      {
+        url: process.env.APP_URL || 'http://localhost:3000', // Your API base URL
+      },
+    ],
+  },
+  apis: ['./routes/*.ts'],
+  basePath: '/',
+}
+
+// Generate Swagger documentation
+const swaggerSpec = swaggerJsdoc(swaggerOptions)
+
+// Serve Swagger UI at the `/docs` route
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Ensure STORAGE_PATH is defined correctly
 const storagePath = process.env.STORAGE_PATH || 'storage/public'
@@ -38,21 +67,12 @@ app.use(
   router
 )
 
-const currentRoutes = router.stack
-  .map(layer => layer.route)
-  .filter(route => route)
-  .map(route => `${process.env.APP_URL}${route.path}`)
-
-// Default route
 app.get('/', (req, res) => {
-  res.send(
-    `
-    <h1>Playea API</h1>
-    <p>Visit our page in <a href="https://playea.eu">Playea</a></p>
-    <p>API documentation <a href="https://api.playea.eu/docs">here</a></p>
-    ` +
-      currentRoutes.map(route => `<a href="${route}">${route}</a>`).join('<br>')
-  )
+  res.status(200).json({
+    status: 200,
+    message: 'Welcome to Playea API',
+    documentation: `${process.env.APP_URL}/docs`
+  })
 })
 
 app.use(notFoundMiddleware)
