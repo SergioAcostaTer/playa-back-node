@@ -66,9 +66,8 @@
           }
         }
       }
-    }
-  },
-  "/me": {
+    },
+    "/me": {
     "get": {
       "summary": "Get the current authenticated user's profile",
       "description": "Returns the profile of the currently authenticated user.",
@@ -730,5 +729,6 @@
         }
       }
     }
+  }
   }
 }
