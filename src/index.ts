@@ -43,10 +43,10 @@ const swaggerOptions = {
 }
 
 // Generate Swagger documentation
-const swaggerSpec = swaggerJsdoc(swaggerOptions)
+const swaggerDocs = swaggerJsdoc(swaggerOptions)
 
 // Serve Swagger UI at the `/docs` route
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Ensure STORAGE_PATH is defined correctly
 const storagePath = process.env.STORAGE_PATH || 'storage/public'
@@ -67,12 +67,20 @@ app.use(
   router
 )
 
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Home page redirection
+ *     description: Redirects to the API documentation at /api-docs.
+ *     tags: [Home]
+ *     responses:
+ *       302:
+ *         description: Redirects to the Swagger documentation
+ */
 app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 200,
-    message: 'Welcome to Playea API',
-    documentation: `${process.env.APP_URL}/docs`
-  })
+  res.redirect('/api-docs')
 })
 
 app.use(notFoundMiddleware)
