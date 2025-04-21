@@ -2,9 +2,11 @@ import { Router } from 'express'
 import { favouritesController } from '@/controllers/favourites'
 import { authMiddleware } from '@/middlewares/authMiddleware'
 
-const router = Router()
-
 // Ruta para agregar una playa a favoritos
-router.post('/:beachId', authMiddleware, favouritesController.addFavourite)
+const favourites = (router: Router): void => {
+    router.get('/favourites', authMiddleware, favouritesController.getFavourites)
+    router.post('/like/:beachId', authMiddleware, favouritesController.addFavourite),
+    router.delete('/like/:beachId', authMiddleware, favouritesController.removeFavourite)
+}
 
-export default router
+export { favourites }
