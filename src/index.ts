@@ -3,7 +3,8 @@ import { resolve } from 'path'
 import 'dotenv/config'
 import winston from 'winston'
 import swaggerUi from 'swagger-ui-express'
-import swaggerJsdoc from 'swagger-jsdoc'
+import fs from 'fs'
+import path from 'path'
 import '@/infrastructure/logger'
 import { db } from '@/dataSources'
 import {
@@ -20,32 +21,14 @@ db.execute('SELECT 1 + 1 AS result').then(() => {
   winston.error('Database connection failed:', err)
 })
 
-
 const app: Express = express()
 
-// Swagger JSDoc configuration
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0', // OpenAPI version
-    info: {
-      title: 'Playea API',
-      version: '1.0.0',
-      description: 'API documentation for Playea service',
-    },
-    servers: [
-      {
-        url: process.env.APP_URL || 'http://localhost:3000', // Your API base URL
-      },
-    ],
-  },
-  apis: ['./routes/*.ts', './controllers/*.ts'], // Path to the API docs
-}
+// Load Swagger JSON documentation
+const swaggerFilePath = path.resolve(__dirname, 'swagger-docs.json')
+const swaggerDocs = JSON.parse(fs.readFileSync(swaggerFilePath, 'utf-8'))
 
-// Generate Swagger documentation
-const swaggerDocs = swaggerJsdoc(swaggerOptions)
-
-// Serve Swagger UI at the `/docs` route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// Serve Swagger UI at the `/api-docs` route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 // Ensure STORAGE_PATH is defined correctly
 const storagePath = process.env.STORAGE_PATH || 'storage/public'
@@ -65,7 +48,6 @@ app.use(
   authMiddleware,
   router
 )
-
 
 /**
  * @swagger
