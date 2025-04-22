@@ -1,8 +1,19 @@
-### Sign-Up Request
-POST http://localhost:8000/v1/auth/sign-up
+### Get Favourites
+GET http://localhost:8000/favourites
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
 Content-Type: application/json
 
-{
-  "email": "tracktreck999@gmail.com",
-  "password": "Pollademon0*"
-}
+### Add Beach to Favourites
+POST http://localhost:8000/like/49
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Content-Type: application/json
+
+### Remove Beach from Favourites
+DELETE http://localhost:8000/like/49
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Content-Type: application/json
+
+### Remove Beach from Favourites
+GET http://localhost:8000/like/499
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Content-Type: application/json
