@@ -1,8 +1,14 @@
-### Sign-Up Request
-POST http://localhost:8000/v1/auth/sign-up
+### Get Favourites
+GET http://localhost:8000/favourites
+Authorization: Bearer YOUR_JWT_TOKEN
 Content-Type: application/json
 
-{
-  "email": "tracktreck999@gmail.com",
-  "password": "Pollademon0*"
-}
+### Add Beach to Favourites
+POST http://localhost:8000/like/42
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+### Remove Beach from Favourites
+DELETE http://localhost:8000/like/42
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
