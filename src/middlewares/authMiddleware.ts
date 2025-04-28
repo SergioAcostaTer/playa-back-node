@@ -17,12 +17,11 @@ export const authMiddleware = async (
     const accessToken = getTokenFromCookie(req)
     if (!accessToken) return next()
 
-    const { id } = jwtVerify({ accessToken })
+    const  res = jwtVerify({ accessToken })
+    const { id } = res
     if (!id) return next()
 
     const user = await userService.getUserById(id)
-
-    consola.info('User authenticated:', user)
 
     if (!user) return next()
 
