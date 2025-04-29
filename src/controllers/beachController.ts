@@ -252,7 +252,7 @@ export const beachController = {
         .select({
           name: beaches.name,
           slug: beaches.slug,
-          coverUrl: beaches.coverUrl,
+          image: beaches.coverUrl,
           island: beaches.island,
         })
         .from(beaches)
