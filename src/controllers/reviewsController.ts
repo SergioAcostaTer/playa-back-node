@@ -170,5 +170,47 @@ export const reviewsController = {
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send('Error deleting review')
     }
+  },
+
+  getAverageRatingByBeach: async (
+    req: Request,
+    res: Response
+  ) => {
+    const { beachId } = req.params
+  
+    if (!beachId) {
+      return res.status(StatusCodes.BAD_REQUEST).send('Beach ID is required')
+    }
+  
+    try {
+      const reviewsList = await db
+        .select({
+          rating: reviews.rating
+        })
+        .from(reviews)
+        .where(eq(reviews.beachId, parseInt(beachId)))
+        .execute()
+  
+      if (reviewsList.length === 0) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send('No reviews found for this beach')
+      }
+  
+      const sum = reviewsList.reduce((acc, r) => acc + r.rating, 0)
+      const average = sum / reviewsList.length
+  
+      return res.status(StatusCodes.OK).json({
+        status: StatusCodes.OK,
+        averageRating: average,
+        totalReviews: reviewsList.length
+      })
+    } catch (error) {
+      winston.error('Error calculating average rating: ', error)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send('Error calculating average rating')
+    }
   }
+  
 }
