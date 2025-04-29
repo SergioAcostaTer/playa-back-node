@@ -253,6 +253,7 @@ export const beachController = {
           name: beaches.name,
           slug: beaches.slug,
           coverUrl: beaches.coverUrl,
+          island: beaches.island,
         })
         .from(beaches)
         .where(and(...conditions))
