@@ -234,5 +234,40 @@ export const beachController = {
         message: 'An unexpected error occurred during fetching beaches'
       })
     }
+  },
+  searchSuggest: async (req: Request, res: Response) => {
+    try {
+      const q = String(req.query.q || '').trim()
+      const limit = 5
+
+      // Condición básica de búsqueda por nombre con búsqueda flexible
+      const conditions: SQL[] = []
+
+      if (q) {
+        // Solo agregar esta condición si la query no está vacía
+        conditions.push(ilike(beaches.name, `%${q}%`))
+      }
+
+      const beachesFromDb = await db
+        .select({
+          name: beaches.name,
+          slug: beaches.slug,
+          coverUrl: beaches.coverUrl,
+        })
+        .from(beaches)
+        .where(and(...conditions))
+        .orderBy(beaches.name)
+        .limit(limit)
+
+      return res.status(StatusCodes.OK).json({
+        status: StatusCodes.OK,
+        data: beachesFromDb
+      })
+    } catch (error) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'An unexpected error occurred during fetching beaches'
+      })
+    }
   }
 }
