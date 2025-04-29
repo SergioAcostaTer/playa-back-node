@@ -1,0 +1,734 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Playea API",
+    "version": "1.0.0",
+    "description": "API documentation for Playea service"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000"
+    }
+  ],
+  "paths": {
+    "/auth/google": {
+      "get": {
+        "summary": "Initiates the Google OAuth2 login process",
+        "description": "Redirects the user to Google's OAuth2 authentication page.",
+        "tags": ["Auth"],
+        "responses": {
+          "302": {
+            "description": "Redirect to Google OAuth2 login page"
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "summary": "Handles Google OAuth2 callback and exchanges code for tokens",
+        "description": "After the user authenticates via Google, this endpoint receives the callback and exchanges the authorization code for an access token.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "The OAuth2 authorization code returned by Google",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to the client URL after successful authentication"
+          },
+          "400": {
+            "description": "Missing or invalid code parameter"
+          },
+          "500": {
+            "description": "Internal server error, failed to exchange code or retrieve user info"
+          }
+        }
+      }
+    },
+    "/auth/log-out": {
+      "post": {
+        "summary": "Logs the user out and clears the authentication token",
+        "description": "Clears the user's authentication token from cookies and ends the session.",
+        "tags": ["Auth"],
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          },
+          "500": {
+            "description": "Internal server error during the logout process"
+          }
+        }
+      }
+    },
+    "/me": {
+    "get": {
+      "summary": "Get the current authenticated user's profile",
+      "description": "Returns the profile of the currently authenticated user.",
+      "tags": ["Users"],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched user profile",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "The user profile object"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Status message"
+                  },
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorized if the user is not authenticated"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Delete the current authenticated user's account",
+      "description": "Deletes the account of the currently authenticated user.",
+      "tags": ["Users"],
+      "responses": {
+        "200": {
+          "description": "Successfully deleted the user's account and redirected"
+        },
+        "401": {
+          "description": "Unauthorized if the user is not authenticated"
+        },
+        "500": {
+          "description": "Internal server error if the account deletion fails"
+        }
+      }
+    }
+  },
+  "/reviews/{beachId}": {
+    "get": {
+      "summary": "Get reviews for a beach",
+      "description": "Retrieve all reviews for a specific beach identified by beachId.",
+      "tags": ["Reviews"],
+      "parameters": [
+        {
+          "name": "beachId",
+          "in": "path",
+          "required": true,
+          "description": "The unique ID of the beach for which to fetch reviews",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched reviews",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "reviews": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "rating": {
+                          "type": "integer"
+                        },
+                        "comment": {
+                          "type": "string"
+                        },
+                        "userId": {
+                          "type": "integer"
+                        },
+                        "beachId": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Missing beachId parameter"
+        },
+        "404": {
+          "description": "No reviews found for the given beach"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/reviews": {
+    "post": {
+      "summary": "Create a new review",
+      "description": "Allows an authenticated user to create a new review for a beach.",
+      "tags": ["Reviews"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "beachId": {
+                  "type": "integer"
+                },
+                "rating": {
+                  "type": "integer"
+                },
+                "comment": {
+                  "type": "string"
+                }
+              },
+              "required": ["beachId", "rating"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Successfully created the review",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Success message"
+                  },
+                  "review": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "rating": {
+                        "type": "integer"
+                      },
+                      "comment": {
+                        "type": "string"
+                      },
+                      "userId": {
+                        "type": "integer"
+                      },
+                      "beachId": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Missing required fields (beachId or rating)"
+        },
+        "401": {
+          "description": "Unauthorized if the user is not authenticated"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/reviews/{reviewId}": {
+    "put": {
+      "summary": "Update an existing review",
+      "description": "Allows an authenticated user to update their own review.",
+      "tags": ["Reviews"],
+      "parameters": [
+        {
+          "name": "reviewId",
+          "in": "path",
+          "required": true,
+          "description": "The unique ID of the review to be updated",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rating": {
+                  "type": "integer"
+                },
+                "comment": {
+                  "type": "string"
+                }
+              },
+              "required": ["rating"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Successfully updated the review"
+        },
+        "400": {
+          "description": "Missing required fields (rating)"
+        },
+        "404": {
+          "description": "Review not found"
+        },
+        "403": {
+          "description": "Forbidden if the user is not the owner of the review"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Delete an existing review",
+      "description": "Allows an authenticated user to delete their own review.",
+      "tags": ["Reviews"],
+      "parameters": [
+        {
+          "name": "reviewId",
+          "in": "path",
+          "required": true,
+          "description": "The unique ID of the review to be deleted",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "204": {
+          "description": "Successfully deleted the review"
+        },
+        "404": {
+          "description": "Review not found"
+        },
+        "403": {
+          "description": "Forbidden if the user is not the owner of the review"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/beaches": {
+    "get": {
+      "summary": "Get all beaches",
+      "description": "Retrieve a paginated list of all beaches with optional filtering by name, island, province, and facilities.",
+      "tags": ["Beaches"],
+      "parameters": [
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number for pagination (default: 1)",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of items per page (default: 10, max: 50)",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "name",
+          "in": "query",
+          "description": "Filter by beach name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "island",
+          "in": "query",
+          "description": "Filter by island",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "province",
+          "in": "query",
+          "description": "Filter by province",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched beaches",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "island": {
+                          "type": "string"
+                        },
+                        "province": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/beaches/search": {
+    "get": {
+      "summary": "Search for beaches",
+      "description": "Search beaches by name and optional filters.",
+      "tags": ["Beaches"],
+      "parameters": [
+        {
+          "name": "q",
+          "in": "query",
+          "description": "Search term for beach name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number for pagination (default: 1)",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of items per page (default: 10, max: 50)",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched search results",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/beaches/{slug}": {
+    "get": {
+      "summary": "Get a beach by slug",
+      "description": "Retrieve a single beach by its slug.",
+      "tags": ["Beaches"],
+      "parameters": [
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug of the beach to fetch",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched the beach",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "slug": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Beach not found"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/favourites": {
+    "get": {
+      "summary": "Get all favorite beaches",
+      "description": "Retrieve a paginated list of all favorite beaches for the authenticated user.",
+      "tags": ["Favorites"],
+      "parameters": [
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number for pagination (default: 1)",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Number of items per page (default: 10, max: 50)",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully fetched favorite beaches",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "beachId": {
+                          "type": "integer"
+                        },
+                        "userId": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "No favorite beaches found"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  },
+  "/like/{beachId}": {
+    "post": {
+      "summary": "Add a beach to favorites",
+      "description": "Add a specific beach to the authenticated user's list of favorites.",
+      "tags": ["Favorites"],
+      "parameters": [
+        {
+          "name": "beachId",
+          "in": "path",
+          "required": true,
+          "description": "ID of the beach to add to favorites",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "Beach successfully added to favorites",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid beach ID"
+        },
+        "409": {
+          "description": "Conflict - Beach is already in the user's favorites"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    },
+    "delete": {
+      "summary": "Remove a beach from favorites",
+      "description": "Remove a specific beach from the authenticated user's list of favorites.",
+      "tags": ["Favorites"],
+      "parameters": [
+        {
+          "name": "beachId",
+          "in": "path",
+          "required": true,
+          "description": "ID of the beach to remove from favorites",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Beach successfully removed from favorites",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "integer",
+                    "description": "HTTP status code"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid beach ID"
+        },
+        "404": {
+          "description": "Beach not found in favorites"
+        },
+        "500": {
+          "description": "Internal server error"
+        }
+      }
+    }
+  }
+  }
+}

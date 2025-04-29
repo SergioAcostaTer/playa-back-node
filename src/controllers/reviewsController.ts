@@ -211,8 +211,5 @@ export const reviewsController = {
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send('Error calculating average rating')
     }
-  },
-
-  
-
+  }
 }
