@@ -28,10 +28,17 @@ export const reviewsController = {
         .returning()
         .execute()
 
+      const revewToReturn = await db
+        .select()
+        .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
+        .where(eq(reviews.id, newReview[0].id))
+        .execute()
+
       return res.status(StatusCodes.CREATED).json({
         status: StatusCodes.CREATED,
         message: 'Review created successfully',
-        review: newReview[0] // Return the created review
+        review: revewToReturn[0]
       })
     } catch (error) {
       winston.error('Error creating review: ', error)
