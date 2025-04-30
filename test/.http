@@ -2,22 +2,22 @@
 
 ### Get Favourites
 GET http://localhost:8000/favourites
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 ### Add Beach to Favourites
 POST http://localhost:8000/like/49
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 ### Remove Beach from Favourites
 DELETE http://localhost:8000/like/49
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 ### Remove Beach from Favourites
 GET http://localhost:8000/like/499
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 
@@ -29,7 +29,7 @@ Content-Type: application/json
 
 ### Create a New Review
 POST http://localhost:8000/reviews
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 {
@@ -40,7 +40,7 @@ Content-Type: application/json
 
 ### Update an Existing Review
 PUT http://localhost:8000/reviews/1
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
 
@@ -51,5 +51,5 @@ Content-Type: application/json
 }
 ### Delete a Review
 DELETE http://localhost:8000/reviews/1
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
