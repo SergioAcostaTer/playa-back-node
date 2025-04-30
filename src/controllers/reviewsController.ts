@@ -1,9 +1,8 @@
-import { Request, Response } from 'express'
-import { StatusCodes, ReasonPhrases } from 'http-status-codes'
-import { IContextRequest, IUserRequest } from '@/contracts/request'
 import { db } from '@/dataSources'
-import { reviews } from '@/models'
-import { eq } from 'drizzle-orm'
+import { reviews, users } from '@/models'
+import { desc, eq } from 'drizzle-orm'
+import { Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
 import winston from 'winston'
 
 export const reviewsController = {
@@ -42,10 +41,7 @@ export const reviewsController = {
     }
   },
 
-  getReviewsByBeach: async (
-    req: Request,
-    res: Response
-  ) => {
+  getReviewsByBeach: async (req: Request, res: Response) => {
     const { beachId } = req.params
 
     if (!beachId) {
@@ -56,7 +52,9 @@ export const reviewsController = {
       const reviewsList = await db
         .select()
         .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
         .where(eq(reviews.beachId, parseInt(beachId)))
+        .orderBy(desc(reviews.createdAt))
         .execute()
 
       if (reviewsList.length === 0) {
@@ -77,10 +75,7 @@ export const reviewsController = {
     }
   },
 
-  updateReview: async (
-    req: Request,
-    res: Response
-  ) => {
+  updateReview: async (req: Request, res: Response) => {
     const { user } = req.context
     const { reviewId } = req.params
     const { rating, comment } = req.body
@@ -131,10 +126,7 @@ export const reviewsController = {
     }
   },
 
-  deleteReview: async (
-    req: Request,
-    res: Response
-  ) => {
+  deleteReview: async (req: Request, res: Response) => {
     const { user } = req.context
     const { reviewId } = req.params
 

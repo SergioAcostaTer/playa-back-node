@@ -39,7 +39,7 @@ Content-Type: application/json
 }
 
 ### Update an Existing Review
-PUT http://localhost:8000/reviews/1
+PUT http://localhost:8000/reviews/4
 Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w
 Content-Type: application/json
 
@@ -49,6 +49,7 @@ Content-Type: application/json
   "rating": 5,
   "comment": "Amaaaaaaaaaaaaazing experience!"
 }
+
 ### Delete a Review
 DELETE http://localhost:8000/reviews/1
 Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTc0NjAyOTQ4MywiZXhwIjoxNzQ2MTE1ODgzfQ.OrWi_4Hxwr4MJyNkXaeclo_AOPLh7jaGH9wl0IYVt1w

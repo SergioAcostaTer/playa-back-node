@@ -1,11 +1,11 @@
 import {
-  pgTable,
-  serial,
-  varchar,
   boolean,
   integer,
+  pgTable,
+  real,
+  serial,
   timestamp,
-  real
+  varchar
 } from 'drizzle-orm/pg-core'
 
 export const beaches = pgTable('beaches', {
