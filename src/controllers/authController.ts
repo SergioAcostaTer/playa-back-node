@@ -102,5 +102,47 @@ export const authController = {
         message: 'An unexpected error occurred during sign-out'
       })
     }
+  },
+
+  register: async (req: Request, res: Response) => {
+    const { email, password, name, lastname } = req.body
+
+    if (!email || !password || !name || !lastname) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Missing required fields'
+      })
+    }
+
+    try {
+      const user = await userService.createUserWithPassword({ email, password, name, lastname })
+      return res.status(StatusCodes.CREATED).json(user)
+    } catch (error) {
+      winston.error('Error during user registration:', error)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to register user'
+      })
+    }
+  },
+
+  // 📌 Nuevo endpoint: Obtener usuario por ID
+  getUserById: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id)
+    if (isNaN(id)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid ID' })
+    }
+
+    try {
+      const user = await userService.getUserById(id)
+      if (!user) {
+        return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' })
+      }
+
+      return res.status(StatusCodes.OK).json(user)
+    } catch (error) {
+      winston.error('Error fetching user by ID:', error)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to retrieve user'
+      })
+    }
   }
 }
