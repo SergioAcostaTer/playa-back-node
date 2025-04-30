@@ -1,14 +1,55 @@
+#### FAVS ####
+
 ### Get Favourites
 GET http://localhost:8000/favourites
-Authorization: Bearer YOUR_JWT_TOKEN
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
 Content-Type: application/json
 
 ### Add Beach to Favourites
-POST http://localhost:8000/like/42
-Authorization: Bearer YOUR_JWT_TOKEN
+POST http://localhost:8000/like/49
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
 Content-Type: application/json
 
 ### Remove Beach from Favourites
-DELETE http://localhost:8000/like/42
-Authorization: Bearer YOUR_JWT_TOKEN
+DELETE http://localhost:8000/like/49
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Content-Type: application/json
+
+### Remove Beach from Favourites
+GET http://localhost:8000/like/499
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTM0MjI0MCwiZXhwIjoxNzQ1NDI4NjQwfQ.-Mq1ioAbnTowkpRnVk_XgyG6URhfsDmPtWPZzjxFYWU
+Content-Type: application/json
+
+
+### REVIEWS ####
+
+### Get Reviews for a Beach
+GET http://localhost:8000/reviews/49
+Content-Type: application/json
+
+### Create a New Review
+POST http://localhost:8000/reviews
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
+Content-Type: application/json
+
+{
+  "beachId": 49,
+  "rating": 5,
+  "comment": "Amazing experience!"
+}
+
+### Update an Existing Review
+PUT http://localhost:8000/reviews/1
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
+Content-Type: application/json
+
+
+{
+  "beachId": 49,
+  "rating": 5,
+  "comment": "Amaaaaaaaaaaaaazing experience!"
+}
+### Delete a Review
+DELETE http://localhost:8000/reviews/1
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc0NTg2NDQyMCwiZXhwIjoxNzQ1OTUwODIwfQ.0lks5RHJlz4INbngL5z8_-09gHQz-11YmmzowyJNA5s
 Content-Type: application/json

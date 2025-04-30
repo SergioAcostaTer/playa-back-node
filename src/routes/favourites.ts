@@ -5,6 +5,7 @@ import { authMiddleware } from '@/middlewares/authMiddleware'
 // Ruta para agregar una playa a favoritos
 const favourites = (router: Router): void => {
     router.get('/favourites', authMiddleware, favouritesController.getFavourites)
+    router.get('/like/:beachId', authMiddleware, favouritesController.getFavouriteById)
     router.post('/like/:beachId', authMiddleware, favouritesController.addFavourite),
     router.delete('/like/:beachId', authMiddleware, favouritesController.removeFavourite)
 }
