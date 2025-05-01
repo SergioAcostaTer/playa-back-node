@@ -1,4 +1,5 @@
 import { IContextRequest, IUserRequest } from '@/contracts/request'
+import { IUser } from '@/contracts/user'
 import { db } from '@/dataSources'
 import { users } from '@/models'
 import { eq } from 'drizzle-orm'
@@ -35,9 +36,25 @@ export const userController = {
     { context: { user }, body }: IContextRequest<IUserRequest>,
     response: Response
   ) => {
+    if (!user?.id) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+        status: StatusCodes.UNAUTHORIZED
+      })
+    }
+
+    // Whitelist fields allowed to be updated
+    const { name, username, email, avatarUrl } = body
+    const updates: Partial<IUser> = {}
+    if (name) updates.name = name
+    if (username) updates.username = username
+    if (email) updates.email = email
+    if (avatarUrl) updates.avatarUrl = avatarUrl
+
     try {
-      await db.update(users).set(body).where(eq(users.id, user.id)).execute()
+      await db.update(users).set(updates).where(eq(users.id, user.id)).execute()
     } catch (error) {
+      console.error('Update error:', error)
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: ReasonPhrases.INTERNAL_SERVER_ERROR,
         status: StatusCodes.INTERNAL_SERVER_ERROR
@@ -45,7 +62,7 @@ export const userController = {
     }
 
     return response.status(StatusCodes.OK).json({
-      data: body,
+      data: updates,
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })
