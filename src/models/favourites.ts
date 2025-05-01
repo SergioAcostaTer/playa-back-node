@@ -1,12 +1,12 @@
 import {
+  integer,
   pgTable,
   serial,
-  integer,
   timestamp,
   unique
 } from 'drizzle-orm/pg-core'
-import { users } from './users'
 import { beaches } from './beaches'
+import { users } from './users'
 
 export const favourites = pgTable(
   'favourites',
