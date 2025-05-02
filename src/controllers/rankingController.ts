@@ -1,7 +1,7 @@
 import { apiConfig } from '@/config/config'
 import { db } from '@/dataSources'
 import { beaches_grades } from '@/models/beaches_grades'
-import { and, desc, eq, isNotNull } from 'drizzle-orm'
+import { and, desc, ilike, isNotNull } from 'drizzle-orm'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
@@ -45,6 +45,7 @@ export const rankingController = {
   getRankingByIsland: async (req: Request, res: Response) => {
     try {
       const island = String(req.params.island)
+      console.log('island', island)
       const page = Math.max(Number(req.query.page) || 1, 1)
       const limit = Math.min(
         Number(req.query.limit) || apiConfig.pagination.defaultLimit,
@@ -56,7 +57,7 @@ export const rankingController = {
         .from(beaches_grades)
         .where(
           and(
-            eq(beaches_grades.island, island),
+            ilike(beaches_grades.island, island),
             isNotNull(beaches_grades.grade)
           )
         )
