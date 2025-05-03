@@ -1,7 +1,8 @@
-import { IGoogleUser } from '@/contracts/user'
-import { db } from '@/dataSources'
-import { users } from '@/models/users'
-import bcrypt from 'bcrypt'
+import { IGoogleUser } from '@/contracts/user';
+import { db } from '@/dataSources';
+import { users } from '@/models/users';
+import bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
 
 export const userService = {
   async createUser(user: IGoogleUser) {
@@ -11,54 +12,60 @@ export const userService = {
       name: user.name,
       username: user.email.split('@')[0],
       avatarUrl: user.picture,
-      passwordHash: null
-    }
-    const [userFromDb] = await db.insert(users).values(userToSave).returning()
-    return userFromDb
+      password: null,
+    };
+    const [userFromDb] = await db.insert(users).values(userToSave).returning();
+    return userFromDb;
   },
 
   async createUserWithPassword({
     email,
     password,
     name,
-    lastname
   }: {
-    email: string
-    password: string
-    name: string, 
-    lastname: string
+    email: string;
+    password: string;
+    name: string;
   }) {
-    const passwordHash = await bcrypt.hash(password, 10)
+    const existingUser = await db.query.users.findFirst({
+      where: (user: { email: any }, { eq }: any) => eq(user.email, email),
+    });
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const username = name.trim().toLowerCase().replace(/\s+/g, '_');
 
     const userToSave = {
       email,
       name,
-      lastname,
-      username: email.split('@')[0],
+      username,
       avatarUrl: null,
       googleHash: null,
-      passwordHash
-    }
+      password: passwordHash,
+    };
 
-    const [userFromDb] = await db.insert(users).values(userToSave).returning()
-    return userFromDb
+    const [userFromDb] = await db.insert(users).values(userToSave).returning();
+    return userFromDb;
   },
 
   async getUserByGoogleId(googleHash: string) {
     return await db.query.users.findFirst({
-      where: (user: { googleHash: any }, { eq }: any) => eq(user.googleHash, googleHash)
-    })
+      where: (user: { googleHash: any }, { eq }: any) => eq(user.googleHash, googleHash),
+    });
   },
+
   async getUserById(id: number) {
     return await db.query.users.findFirst({
-      where: (user: { id: any }, { eq }: any) => eq(user.id, id)
-    })
+      where: (user: { id: any }, { eq }: any) => eq(user.id, id),
+    });
   },
 
   async getUserByEmail(email: string) {
-    return await db.query.users.findFirst({
-      where: (user: { email: any }, { eq }: any) => eq(user.email, email)
-    })
-  }
-  
-}
+    const user = await db.query.users.findFirst({
+      where: (user: { email: any }, { eq }: any) => eq(user.email, email),
+    });
+    return user;
+  },
+};
