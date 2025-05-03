@@ -8,6 +8,7 @@ import { setToken, clearToken } from '@/utils/cookies'
 import { oauth2Client } from '@/config/googleOAuth'
 import { db } from '@/dataSources'
 import { sessions } from '@/models'
+import bcrypt from 'bcrypt'
 
 export const authController = {
   google: (_: Request, res: Response) => {
@@ -88,6 +89,26 @@ export const authController = {
     }
   },
 
+  register: async (req: Request, res: Response) => {
+    const { email, password, name, lastname } = req.body
+
+    if (!email || !password || !name || !lastname) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Missing required fields'
+      })
+    }
+
+    try {
+      const user = await userService.createUserWithPassword({ email, password, name, lastname })
+      return res.status(StatusCodes.CREATED).json(user)
+    } catch (error) {
+      winston.error('Error during user registration:', error)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to register user'
+      })
+    }
+  },
+
   logOut: async (_: Request, res: Response) => {
     try {
       clearToken(res)
@@ -102,5 +123,54 @@ export const authController = {
         message: 'An unexpected error occurred during sign-out'
       })
     }
+  },
+
+  login: async (req: Request, res: Response) => {
+    const { email, password } = req.body
+  
+    if (!email || !password) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Email and password are required'
+      })
+    }
+  
+    try {
+      const user = await userService.getUserByEmail(email)
+  
+      if (!user || !user.passwordHash) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+          message: 'Invalid email or password'
+        })
+      }
+  
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
+  
+      if (!isPasswordValid) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+          message: 'Invalid email or password'
+        })
+      }
+  
+      const { accessToken } = jwtSign(user.id)
+      setToken(res, accessToken)
+      res.setHeader('Authorization', `Bearer ${accessToken}`)
+  
+      await db.insert(sessions).values({ userId: user.id }).execute()
+  
+      return res.status(StatusCodes.OK).json({
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        }
+      })
+    } catch (error) {
+      winston.error('Error during login:', error)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Failed to login user'
+      })
+    }
   }
+  
 }
